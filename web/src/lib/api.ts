@@ -47,9 +47,21 @@ export class ApiError extends Error {
     readonly status: number,
     readonly code: string,
     message: string,
+    /** 日本語と英語の両方の文言（あれば、画面の言語を切り替えたときにこちらを使う。§6.12） */
+    readonly texts: { ja: string; en: string } | null = null,
   ) {
     super(message);
   }
+
+  /** いまの画面の言語での文言 */
+  text(): string {
+    return this.texts ? this.texts[LANG] : this.message;
+  }
+}
+
+/** 日本語と英語の両方を持つエラーを作る（画面の中で作るエラー） */
+export function apiError(status: number, code: string, ja: string, en: string): ApiError {
+  return new ApiError(status, code, tr(ja, en), { ja, en });
 }
 
 let csrfToken = "";
@@ -74,11 +86,14 @@ export async function request<T>(method: string, path: string, body?: unknown): 
       cache: "no-store",
     });
   } catch {
-    throw new ApiError(0, "network", tr("通信できませんでした。接続を確認してもう一度お試しください。", "Couldn't connect. Check your connection and try again."));
+    throw apiError(0, "network", "通信できませんでした。接続を確認してもう一度お試しください。", "Couldn't connect. Check your connection and try again.");
   }
-  const data = (await res.json().catch(() => null)) as { error?: { code: string; message: string } } | null;
+  const data = (await res.json().catch(() => null)) as { error?: { code: string; message: string; messages?: { ja: string; en: string } } } | null;
   if (!res.ok) {
-    throw new ApiError(res.status, data?.error?.code ?? "error", data?.error?.message ?? tr("エラーが発生しました。", "Something went wrong."));
+    const err = data?.error;
+    if (!err?.message) throw apiError(res.status, err?.code ?? "error", "エラーが発生しました。", "Something went wrong.");
+    const texts = err.messages && typeof err.messages.ja === "string" && typeof err.messages.en === "string" ? err.messages : null;
+    throw new ApiError(res.status, err.code ?? "error", err.message, texts);
   }
   return data as T;
 }

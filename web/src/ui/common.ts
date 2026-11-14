@@ -1,5 +1,5 @@
 // 画面共通の部品
-import { ApiError, request, type PollData } from "../lib/api";
+import { ApiError, apiError, request, type PollData } from "../lib/api";
 import { h, lineIcon, notice, render } from "../lib/dom";
 import { donationNote } from "../../../src/shared/text";
 import { DEFAULT_TIMEZONE, formatDateTime, formatSlot, isValidTimeZone, zoneAbbr, type SlotTime } from "../lib/time";
@@ -313,9 +313,16 @@ export function errorText(e: unknown, kind: PageKind, fallback: string): string 
 }
 
 /** エラー画面（S5） */
+/** いま表示しているエラー（リンク中継の画面で言語を切り替えたときに、描き直すため） */
+let shownError: { err: unknown; kind: PageKind } | null = null;
+export function redrawError(): void {
+  if (shownError) showError(shownError.err, shownError.kind);
+}
+
 export function showError(err: unknown, kind: PageKind = "link"): void {
+  shownError = { err, kind };
   const app = document.getElementById("app")!;
-  const e = err instanceof ApiError ? err : new ApiError(0, "unknown", tr("エラーが発生しました。", "Something went wrong."));
+  const e = err instanceof ApiError ? err : apiError(0, "unknown", "エラーが発生しました。", "Something went wrong.");
   const freeTier = e.code === "free_tier_exceeded";
   render(
     app,
@@ -323,7 +330,7 @@ export function showError(err: unknown, kind: PageKind = "link"): void {
       "section",
       { class: "card error-card" },
       h("h1", {}, freeTier ? tr("本日の無料枠を超えました", "Today's free tier has been used up") : e.status === 401 || e.status === 404 ? tr("ページを開けません", "Can't open this page") : tr("エラーが発生しました", "Something went wrong")),
-      h("p", {}, e.message),
+      h("p", {}, e.text()),
       // リンクの期限切れは、画面に合わせて押し直すボタンを案内する。
       // 一覧ページの期限切れと、中継ページで使えなかったリンクは、サーバーのメッセージで受け取り方まで伝えるので、ここでは出さない
       e.status === 401 && !SELF_EXPLAINING.has(e.code) ? h("p", {}, reopenHint(kind)) : null,
