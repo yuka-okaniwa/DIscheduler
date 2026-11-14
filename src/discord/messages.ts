@@ -17,9 +17,20 @@ function slotLabel(s: SlotRow, lang: Lang): string {
   return s.end_at ? `<t:${s.start_at}:f>${dash}<t:${s.end_at}:t>` : `<t:${s.start_at}:f>${dash}`;
 }
 
+/** 調整のタイトル（なければ「日程調整」）。Markdown の記号を無効にしないそのままの文字（Discord イベントの名前など） */
+export function rawPollTitle(poll: Pick<PollRow, "title" | "lang">): string {
+  return poll.title ?? translator(poll.lang)("日程調整", "Scheduling poll");
+}
+
 /** 調整のタイトル（なければ「日程調整」）。Markdown の記号は無効にする */
 export function pollTitle(poll: Pick<PollRow, "title" | "lang">): string {
-  return escapeMarkdown(poll.title ?? (poll.lang === "en" ? "Scheduling poll" : "日程調整"));
+  return escapeMarkdown(rawPollTitle(poll));
+}
+
+/** 確定した日時の書き方（確定のお知らせ用。§4.3） */
+export function slotWhen(slot: { start_at: number; all_day: number }, lang: Lang): string {
+  if (!slot.all_day) return `<t:${slot.start_at}:F>`;
+  return translator(lang)(`<t:${slot.start_at}:D>（終日）`, `<t:${slot.start_at}:D> (all day)`);
 }
 
 export interface MessageData {

@@ -32,7 +32,8 @@ export type CreateResult =
  */
 function switchLangStatements(db: D1Database, pollId: string, lang: Lang): D1PreparedStatement[] {
   return [
-    db.prepare("UPDATE polls SET lang = ? WHERE id = ?").bind(lang, pollId),
+    // 選択肢を入れ替えるので版を上げる（開いたままの作成画面から古い選択肢で保存されたら、「ほかの画面で変更されています」と知らせる）
+    db.prepare("UPDATE polls SET lang = ?, choices_version = choices_version + 1 WHERE id = ?").bind(lang, pollId),
     db.prepare("DELETE FROM choices WHERE poll_id = ?").bind(pollId),
     ...defaultChoiceStatements(db, pollId, lang),
   ];

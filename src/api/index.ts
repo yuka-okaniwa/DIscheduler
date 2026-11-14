@@ -37,7 +37,7 @@ import {
   type SessionRow,
 } from "../db";
 import { fetchMember, searchMembers } from "../discord/members";
-import { buildAnnounceMessage, buildDeletedMessage, buildFixedMessage, buildMentionMessage, buildPollMessage, escapeMarkdown, messageLink, pollTitle } from "../discord/messages";
+import { buildAnnounceMessage, buildDeletedMessage, buildFixedMessage, buildMentionMessage, buildPollMessage, escapeMarkdown, messageLink, pollTitle, rawPollTitle, slotWhen } from "../discord/messages";
 import { discord, DiscordError, type DiscordChannel, type DiscordRole } from "../discord/rest";
 import { AppError, DAY, floorToMinute, nowSec, randomId, timingSafeEqual } from "../core/lib";
 import { DEFAULT_DEADLINE_DAYS, resetParticipants, RETENTION } from "../polls/create";
@@ -670,11 +670,7 @@ polls.put("/:id/answers/me", async (c) => {
   return c.json({ ok: true });
 });
 
-/** 確定した候補の日時の表示（Discord のメッセージ用） */
-function slotWhen(slot: { start_at: number; all_day: number }, lang: Lang): string {
-  if (!slot.all_day) return `<t:${slot.start_at}:F>`;
-  return lang === "en" ? `<t:${slot.start_at}:D> (all day)` : `<t:${slot.start_at}:D>（終日）`;
-}
+
 
 /** 登録済みの Discord イベントを消す。すでに消えていれば何もしない。消せなかったら警告の文を返す */
 async function deleteEvent(env: Env, poll: PollRow, slot: SlotRow): Promise<Msg | null> {
@@ -796,7 +792,7 @@ polls.post("/:id/announce", async (c) => {
     poll,
     fixed.map((s) => ({
       when: slotWhen(s, poll.lang),
-      note: lateIds.has(s.id) ? (poll.lang === "en" ? `starts <t:${s.start_at}:R>` : `<t:${s.start_at}:R>に始まります`) : null,
+      note: lateIds.has(s.id) ? translator(poll.lang)(`<t:${s.start_at}:R>に始まります`, `starts <t:${s.start_at}:R>`) : null,
     })),
     cancelled.map((s) => slotWhen(s, poll.lang)),
     mention,
@@ -846,7 +842,7 @@ async function upsertEvent(
   if (slot.start_at <= now + 60) return msg("開始日時が過ぎているため、Discord イベントは登録しませんでした。", "The start time has passed, so no Discord event was created.");
   const end = slot.end_at ?? slot.start_at + (slot.all_day ? DAY : 3600);
   const payload: Record<string, unknown> = {
-    name: (poll.title ?? (poll.lang === "en" ? "Scheduling poll" : "日程調整")).slice(0, 100),
+    name: rawPollTitle(poll).slice(0, 100),
     description: (poll.description ?? "").slice(0, 1000) || undefined,
     privacy_level: 2,
     scheduled_start_time: new Date(slot.start_at * 1000).toISOString(),

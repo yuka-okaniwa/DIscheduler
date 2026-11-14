@@ -1,4 +1,5 @@
 // 文字列の検証・整形（docs/security-design.md §4.4）
+import type { Lang } from "./i18n";
 
 // 制御文字（改行・タブを含む）と、双方向制御文字・ゼロ幅文字などの見えない書式文字
 // eslint-disable-next-line no-control-regex
@@ -62,7 +63,7 @@ export function isValidDonationUrl(u: string | null | undefined): u is string {
 export const KOFI_DONATION_NOTE = "支援は Ko-fi（海外の支援サービス）で受け付けています。画面は英語ですが、金額を選んで、PayPal で支払えます。";
 /** 英語の画面での説明（Ko-fi の画面が英語であることは書かない。§6.12） */
 export const KOFI_DONATION_NOTE_EN = "Support is accepted through Ko-fi. Choose an amount and pay with PayPal.";
-export function donationNote(url: string, lang: "ja" | "en" = "ja"): string {
+export function donationNote(url: string, lang: Lang = "ja"): string {
   if (!/^https:\/\/(www\.)?ko-fi\.com(\/|$)/.test(url)) return "";
   return lang === "en" ? KOFI_DONATION_NOTE_EN : KOFI_DONATION_NOTE;
 }
