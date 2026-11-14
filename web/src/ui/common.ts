@@ -308,8 +308,8 @@ export function reopenHint(kind: PageKind): string {
 /** 画面の中に出すエラーの文。リンクの期限切れなら、新しいリンクを受け取る方法を添える */
 export function errorText(e: unknown, kind: PageKind, fallback: string): string {
   if (!(e instanceof ApiError)) return e instanceof Error ? e.message : fallback;
-  if (e.status === 401 && !SELF_EXPLAINING.has(e.code)) return `${e.message}${reopenHint(kind)}`;
-  return e.message;
+  if (e.status === 401 && !SELF_EXPLAINING.has(e.code)) return `${e.text()}${reopenHint(kind)}`;
+  return e.text();
 }
 
 /** エラー画面（S5） */
