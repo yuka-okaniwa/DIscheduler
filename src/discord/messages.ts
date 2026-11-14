@@ -106,8 +106,7 @@ export function buildPollMessage(d: MessageData) {
         components: [
           { type: 2, style: 1, label: t("回答する", "Answer"), custom_id: `answer:${poll.id}` },
           { type: 2, style: 2, label: t("集計を見る", "View results"), custom_id: `view:${poll.id}` },
-          // 使い方も調整の言語で返すよう、言語を custom_id に入れる（help:ja / help:en。§6.12）
-          { type: 2, style: 2, label: t("使い方", "Help"), custom_id: `help:${L}` },
+          { type: 2, style: 2, label: t("使い方", "Help"), custom_id: "help" },
         ],
       },
     ],
