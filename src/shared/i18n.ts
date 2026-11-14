@@ -11,6 +11,12 @@ export interface Msg {
 
 export const msg = (ja: string, en: string): Msg => ({ ja, en });
 
+/** 言語を決めた「日本語と英語のうち一方を返す」関数を作る（Discord のメッセージなど、サーバー側で文を組み立てるとき） */
+export const translator =
+  (lang: Lang) =>
+  (ja: string, en: string): string =>
+    lang === "en" ? en : ja;
+
 export function pick(m: Msg | string, lang: Lang): string {
   return typeof m === "string" ? m : m[lang];
 }

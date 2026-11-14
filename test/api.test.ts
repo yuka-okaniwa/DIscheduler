@@ -794,7 +794,11 @@ describe("エラーの言語（§6.12）", () => {
   it("X-DI-Lang: en なら英語、なければ日本語で返す", async () => {
     const s = await seedPoll({ participants: [ALICE] });
     const res = await call(new Request(`${ORIGIN}/api/polls/${s.pollId}`, { headers: { "X-DI-Lang": "en" } }));
-    expect(((await res.json()) as { error: { message: string } }).error.message).toMatch(/expired/);
+    const body = (await res.json()) as { error: { message: string; messages: { ja: string; en: string } } };
+    expect(body.error.message).toMatch(/expired/);
+    // 画面で言語を切り替えたときのために、両方の言語も返す
+    expect(body.error.messages.en).toBe(body.error.message);
+    expect(body.error.messages.ja).toMatch(/有効期限/);
     const ja = await call(getReq(`/api/polls/${s.pollId}`));
     expect(((await ja.json()) as { error: { message: string } }).error.message).toMatch(/有効期限/);
   });

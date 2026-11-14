@@ -159,7 +159,7 @@ export async function answerPage(pollId: string): Promise<void> {
             // 調整の ID は # の後ろに置き、サーバーのログにも広告の枠にも送らない
             location.assign(`/answered#p=${pollId}`);
           } catch (err) {
-            message = notice("error", err instanceof Error ? err.message : tr("保存できませんでした。", "Couldn't save."));
+            message = notice("error", errorText(err, "answer", tr("保存できませんでした。", "Couldn't save.")));
             saveBtn.disabled = false;
             draw();
           }

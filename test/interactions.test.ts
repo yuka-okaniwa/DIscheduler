@@ -14,7 +14,9 @@ beforeAll(async () => {
 afterEach(() => vi.restoreAllMocks());
 
 async function signed(body: unknown, opts: { tamper?: boolean; ts?: number } = {}): Promise<Request> {
-  const text = JSON.stringify(body);
+  // Discord は押した人の言語（locale）を必ず付けて送る。指定のないテストは日本語の利用者として扱う
+  const withLocale = body && typeof body === "object" && (body as { type?: number }).type !== 1 && !("locale" in body) ? { locale: "ja", ...body } : body;
+  const text = JSON.stringify(withLocale);
   const ts = String(opts.ts ?? Math.floor(Date.now() / 1000));
   const sig = new Uint8Array(await crypto.subtle.sign("Ed25519", keys.privateKey, new TextEncoder().encode(ts + text)));
   const hex = Array.from(sig, (b) => b.toString(16).padStart(2, "0")).join("");
@@ -81,6 +83,48 @@ describe("/schedule と /di", () => {
       expect(ps.results.map((p) => p.user_id).sort()).toEqual([ORGANIZER, ALICE].sort()); // Bot は除外
     });
   }
+
+  it("英語の利用者には英語で返し、調整の言語と最初の選択肢も英語にする。日本語で使い回すと日本語に戻す（§6.12）", async () => {
+    const db = (env as unknown as Env).DB;
+    await db.prepare("DELETE FROM polls WHERE organizer_id = ?").bind(ORGANIZER).run();
+    const calls = mockDiscord((c) => {
+      if (c.path === `/channels/${CHANNEL}`) return { id: CHANNEL, type: 0, permission_overwrites: [] };
+      if (c.path === `/guilds/${GUILD}`) return { owner_id: ORGANIZER };
+      if (c.path === `/guilds/${GUILD}/roles`) return [{ id: GUILD, name: "@everyone", permissions: "1024", position: 0 }];
+      if (c.path.startsWith(`/guilds/${GUILD}/members?`)) return [member(ORGANIZER)];
+      return {};
+    });
+    const cmd = async (locale: string) =>
+      call(await signed({ type: 2, id: "9", application_id: "100000000000000001", token: "tok", locale, guild_id: GUILD, channel_id: CHANNEL, member: member(ORGANIZER), data: { name: "schedule" } }), e());
+    await cmd("en-US");
+    const reply = JSON.stringify(calls.filter((c) => c.method === "PATCH" && c.path.includes("/messages/@original")).at(-1)!.body);
+    expect(reply).toContain("Create the poll");
+    expect(reply).not.toMatch(/[ぁ-ん]/);
+    const poll = await db.prepare("SELECT id, lang FROM polls WHERE organizer_id = ? AND status = 'draft'").bind(ORGANIZER).first<{ id: string; lang: string }>();
+    expect(poll!.lang).toBe("en");
+    const labels = async () => (await db.prepare("SELECT label FROM choices WHERE poll_id = ? ORDER BY position").bind(poll!.id).all<{ label: string }>()).results.map((r) => r.label);
+    expect(await labels()).toEqual(["Yes", "Maybe", "No"]);
+    await cmd("ja");
+    expect((await db.prepare("SELECT lang FROM polls WHERE id = ?").bind(poll!.id).first<{ lang: string }>())!.lang).toBe("ja");
+    expect(await labels()).toEqual(["参加", "未定", "不可"]);
+  });
+
+  it("英語の利用者には、［使い方］［サーバー既定値の設定］と場所の入力フォームも英語で返す（§6.12）", async () => {
+    mockDiscord();
+    const press = async (customId: string, perms = "1024") =>
+      (await (
+        await call(
+          await signed({ type: 3, id: "9", application_id: "1", token: "tok", locale: "en-GB", guild_id: GUILD, channel_id: CHANNEL, member: member(ORGANIZER, perms), data: { custom_id: customId } }),
+          e(),
+        )
+      ).json()) as unknown;
+    const ADMIN = String(1n << 5n);
+    for (const [id, perms, word] of [["help", "1024", "How to use DIscheduler"], ["settings", ADMIN, "Defaults for this server"], ["settings_location", ADMIN, "Event location"], ["settings", "1024", "Manage Server"]] as const) {
+      const body = JSON.stringify(await press(id, perms));
+      expect(body).toContain(word);
+      expect(body).not.toMatch(/[ぁ-ん]/);
+    }
+  });
 
   it("未入力の下書きは使い回す", async () => {
     mockDiscord((c) => {

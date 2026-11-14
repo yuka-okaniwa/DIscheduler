@@ -2,6 +2,7 @@
 // 変更できるのは「サーバー管理」権限を持つメンバーだけ。権限は署名済みの Interaction の値で判定する。
 import { nowSec } from "../core/lib";
 import { escapeMarkdown } from "../discord/messages";
+import { translator, type Lang } from "../shared/i18n";
 import { hasPermission, PERM } from "../discord/permissions";
 
 /** イベントの場所の最大文字数（確定の画面の入力欄と同じ） */
@@ -80,36 +81,47 @@ export async function saveGuildSettings(db: D1Database, guildId: string, s: { mo
     .run();
 }
 
-const MODE_LABEL: Record<DefaultMode, string> = {
-  channel: "自動: コマンドを実行したチャンネルのメンバー",
-  role: "自動: 指定したロールのメンバー",
-  manual: "手動: 主催者が選ぶ",
+const MODE_LABEL: Record<Lang, Record<DefaultMode, string>> = {
+  ja: {
+    channel: "自動: コマンドを実行したチャンネルのメンバー",
+    role: "自動: 指定したロールのメンバー",
+    manual: "手動: 主催者が選ぶ",
+  },
+  en: {
+    channel: "Automatic: members of the channel where the command was run",
+    role: "Automatic: members of the selected role",
+    manual: "Manual: the organizer chooses",
+  },
 };
 
-/** 既定値の設定メッセージ（本人にだけ表示） */
-export function buildSettingsMessage(s: GuildSettings, note: string | null) {
+/** 既定値の設定メッセージ（本人にだけ表示。押した人の Discord の言語で書く。§6.12） */
+export function buildSettingsMessage(s: GuildSettings, note: string | null, lang: Lang = "ja") {
+  const t = translator(lang);
   // 「自動: 」「手動: 」のあとの、いま選ばれている値を太字と下線で目立たせる（Discord の __**…**__）
-  const [kind, value] = MODE_LABEL[s.mode].split(": ") as [string, string];
-  const mode = s.mode === "role" && s.roleId ? `${value}（<@&${s.roleId}>）` : value;
-  const location = s.eventLocation ? escapeMarkdown(s.eventLocation) : "Discord（初期値）";
+  const [kind, value] = MODE_LABEL[lang][s.mode].split(": ") as [string, string];
+  const mode = s.mode === "role" && s.roleId ? t(`${value}（<@&${s.roleId}>）`, `${value} (<@&${s.roleId}>)`) : value;
+  const location = s.eventLocation ? escapeMarkdown(s.eventLocation) : t("Discord（初期値）", "Discord (default)");
   // ボイスチャンネルを既定にしているときは、そのチャンネルを出す（チャンネル名の表示は Discord がする）
   const place = s.eventChannelId
     ? [
-        `○イベントの場所: ボイスチャンネル __**<#${s.eventChannelId}>**__`,
-        "日時を確定して Discord イベントに登録するとき、このボイスチャンネルが最初から選ばれます",
-        `（「場所を入力」に切り替えたときは、「${location}」が入ります）`,
+        t(`○イベントの場所: ボイスチャンネル __**<#${s.eventChannelId}>**__`, `○Event location: voice channel __**<#${s.eventChannelId}>**__`),
+        t("日時を確定して Discord イベントに登録するとき、このボイスチャンネルが最初から選ばれます", "This voice channel is preselected when a date is confirmed and added as a Discord event"),
+        t(`（「場所を入力」に切り替えたときは、「${location}」が入ります）`, `(If "Enter a location" is chosen instead, "${location}" is filled in)`),
       ]
-    : [`○イベントの場所: __**${location}**__`, "日時を確定して Discord イベントに登録するとき、「場所を入力」の欄に最初から入ります"];
+    : [
+        t(`○イベントの場所: __**${location}**__`, `○Event location: __**${location}**__`),
+        t("日時を確定して Discord イベントに登録するとき、「場所を入力」の欄に最初から入ります", "Filled in as the location when a date is confirmed and added as a Discord event"),
+      ];
   const lines = [
-    "**このサーバーの既定値**",
-    "主催者は調整ごとに変更できます。",
+    t("**このサーバーの既定値**", "**Defaults for this server**"),
+    t("主催者は調整ごとに変更できます。", "Organizers can change these for each poll."),
     "",
-    `○参加者の決め方: ${kind}: __**${mode}**__`,
-    "`/schedule`（`/di`）でオプションを指定しなかったときに使われます",
+    t(`○参加者の決め方: ${kind}: __**${mode}**__`, `○How participants are chosen: ${kind}: __**${mode}**__`),
+    t("`/schedule`（`/di`）でオプションを指定しなかったときに使われます", "Used when no options are given to `/schedule` (`/di`)"),
     "",
     ...place,
   ];
-  if (s.updatedBy && s.updatedAt) lines.push("", `（最終変更: <@${s.updatedBy}>：<t:${s.updatedAt}:f>）`);
+  if (s.updatedBy && s.updatedAt) lines.push("", t(`（最終変更: <@${s.updatedBy}>：<t:${s.updatedAt}:f>）`, `(Last changed by <@${s.updatedBy}>: <t:${s.updatedAt}:f>)`));
   if (note) lines.push("", note);
   return {
     content: lines.join("\n"),
@@ -121,8 +133,8 @@ export function buildSettingsMessage(s: GuildSettings, note: string | null) {
           {
             type: 3,
             custom_id: "settings_mode",
-            placeholder: "参加者の決め方を選ぶ",
-            options: (["channel", "role", "manual"] as const).map((m) => ({ label: MODE_LABEL[m], value: m, default: m === s.mode })),
+            placeholder: t("参加者の決め方を選ぶ", "Choose how participants are chosen"),
+            options: (["channel", "role", "manual"] as const).map((m) => ({ label: MODE_LABEL[lang][m].slice(0, 100), value: m, default: m === s.mode })),
           },
         ],
       },
@@ -132,7 +144,7 @@ export function buildSettingsMessage(s: GuildSettings, note: string | null) {
           {
             type: 6, // ロールの選択
             custom_id: "settings_role",
-            placeholder: "既定のロールを選ぶ（「指定したロールのメンバー」のとき）",
+            placeholder: t("既定のロールを選ぶ（「指定したロールのメンバー」のとき）", "Choose the default role (for \"members of the selected role\")"),
             min_values: 0,
             max_values: 1,
             // 保存済みのロールは本文に表示し、選択メニューでは選んだ状態にしない
@@ -146,7 +158,7 @@ export function buildSettingsMessage(s: GuildSettings, note: string | null) {
           {
             type: 8, // チャンネルの選択
             custom_id: "settings_channel",
-            placeholder: "イベントの場所をボイスチャンネルにする",
+            placeholder: t("イベントの場所をボイスチャンネルにする", "Use a voice channel as the event location"),
             channel_types: [2, 13], // ボイス・ステージ（確定の画面の一覧と同じ）
             min_values: 1,
             max_values: 1,
@@ -154,16 +166,17 @@ export function buildSettingsMessage(s: GuildSettings, note: string | null) {
           },
         ],
       },
-      { type: 1, components: [{ type: 2, style: 2, label: "イベントの場所を文字で入力", custom_id: "settings_location" }] },
+      { type: 1, components: [{ type: 2, style: 2, label: t("イベントの場所を文字で入力", "Enter the event location as text"), custom_id: "settings_location" }] },
     ],
   };
 }
 
 /** イベントの場所を入力するフォーム（Discord のモーダル）。空にすると「Discord」に戻す */
-export function buildLocationModal(current: string | null) {
+export function buildLocationModal(current: string | null, lang: Lang = "ja") {
+  const t = translator(lang);
   return {
     custom_id: "settings_location_modal",
-    title: "イベントの場所（文字で入力）",
+    title: t("イベントの場所（文字で入力）", "Event location (text)"),
     components: [
       {
         type: 1,
@@ -172,7 +185,7 @@ export function buildLocationModal(current: string | null) {
             type: 4, // 1 行の入力欄
             custom_id: "location",
             style: 1,
-            label: "場所（空にすると「Discord」）",
+            label: t("場所（空にすると「Discord」）", "Location (leave empty for \"Discord\")"),
             placeholder: "Discord",
             min_length: 0,
             max_length: EVENT_LOCATION_MAX,

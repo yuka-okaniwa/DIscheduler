@@ -25,11 +25,25 @@ function detect(): Lang {
   return langFromTag(first);
 }
 
-export const LANG: Lang = detect();
+/** 画面の言語。リンク中継の画面（/l）では、読み込み直さずに切り替える（setLangInPlace） */
+export let LANG: Lang = detect();
+document.documentElement.lang = LANG;
 
 /** 日本語と英語のうち、画面の言語のほうを返す */
 export function tr(ja: string, en: string): string {
   return LANG === "en" ? en : ja;
+}
+
+/** 言語を切り替え、読み込み直さずに、その場で描き直す（リンク中継の画面用。読み込み直すとリンクの中身が URL から消えているため） */
+export function setLangInPlace(lang: Lang, redraw: () => void): void {
+  try {
+    localStorage.setItem(KEY, lang);
+  } catch {
+    /* 保存できなくても、この画面では切り替える */
+  }
+  LANG = lang;
+  document.documentElement.lang = lang;
+  redraw();
 }
 
 /** 言語を切り替えて、画面を読み込み直す（描いた画面の文言をすべて入れ替えるため） */

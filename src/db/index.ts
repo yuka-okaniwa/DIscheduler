@@ -1,6 +1,7 @@
 // D1 へのアクセス。SQL はすべてプリペアドステートメントで組み立てる（security-design T-1）
 import type { ChoiceColor, ChoiceInput, ChoiceKind, PollStatus, Purpose, Role } from "../shared/model";
-import { CHOICE_TEMPLATES } from "../shared/model";
+import { choiceTemplates } from "../shared/model";
+import type { Lang } from "../shared/i18n";
 import { randomId } from "../core/lib";
 
 export interface PollRow {
@@ -33,6 +34,8 @@ export interface PollRow {
   /** 使わない（0009 で slots.day_reminded_at に移した） */
   day_reminded_slot_at: number | null;
   choices_changed_at: number | null;
+  /** 調整の言語（§6.12）。チャンネルに投稿するメッセージの言語 */
+  lang: Lang;
   created_at: number;
   updated_at: number;
   purge_after: number;
@@ -137,8 +140,8 @@ export async function getAnswers(db: D1Database, pollId: string): Promise<Answer
   return r.results;
 }
 
-export function defaultChoiceStatements(db: D1Database, pollId: string): D1PreparedStatement[] {
-  return insertChoiceStatements(db, pollId, CHOICE_TEMPLATES[0]!.choices);
+export function defaultChoiceStatements(db: D1Database, pollId: string, lang: Lang = "ja"): D1PreparedStatement[] {
+  return insertChoiceStatements(db, pollId, choiceTemplates(lang)[0]!.choices);
 }
 
 export function insertChoiceStatements(db: D1Database, pollId: string, choices: readonly ChoiceInput[]): D1PreparedStatement[] {

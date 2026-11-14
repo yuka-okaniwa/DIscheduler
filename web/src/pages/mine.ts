@@ -50,7 +50,7 @@ export async function minePage(guildId: string): Promise<void> {
       const r = await request<{ redirect: string }>("POST", `${base}/polls/${p.id}/open`, { to });
       if (/^\/p\/[A-Za-z0-9_-]{22}(\/edit)?$/.test(r.redirect)) location.assign(r.redirect);
     } catch (e) {
-      message = notice("error", e instanceof ApiError ? e.message : tr("開けませんでした。", "Couldn't open."));
+      message = notice("error", e instanceof ApiError ? e.text() : tr("開けませんでした。", "Couldn't open."));
       draw();
     } finally {
       busy = false;
@@ -66,7 +66,7 @@ export async function minePage(guildId: string): Promise<void> {
       polls = polls.filter((x) => x.id !== p.id);
       message = notice(r.warnings?.length ? "warn" : "ok", tr(`「${p.title ?? "（タイトル未入力）"}」を削除しました。`, `Deleted "${p.title ?? "(untitled)"}".`), ...(r.warnings ?? []).map((w) => h("p", {}, w)));
     } catch (e) {
-      message = notice("error", e instanceof ApiError ? e.message : tr("削除できませんでした。", "Couldn't delete."));
+      message = notice("error", e instanceof ApiError ? e.text() : tr("削除できませんでした。", "Couldn't delete."));
     } finally {
       busy = false;
       draw();
