@@ -109,6 +109,23 @@ describe("/schedule と /di", () => {
     expect(await labels()).toEqual(["参加", "未定", "不可"]);
   });
 
+  it("英語の利用者には、［使い方］［サーバー既定値の設定］と場所の入力フォームも英語で返す（§6.12）", async () => {
+    mockDiscord();
+    const press = async (customId: string, perms = "1024") =>
+      (await (
+        await call(
+          await signed({ type: 3, id: "9", application_id: "1", token: "tok", locale: "en-GB", guild_id: GUILD, channel_id: CHANNEL, member: member(ORGANIZER, perms), data: { custom_id: customId } }),
+          e(),
+        )
+      ).json()) as unknown;
+    const ADMIN = String(1n << 5n);
+    for (const [id, perms, word] of [["help", "1024", "How to use DIscheduler"], ["settings", ADMIN, "Defaults for this server"], ["settings_location", ADMIN, "Event location"], ["settings", "1024", "Manage Server"]] as const) {
+      const body = JSON.stringify(await press(id, perms));
+      expect(body).toContain(word);
+      expect(body).not.toMatch(/[ぁ-ん]/);
+    }
+  });
+
   it("未入力の下書きは使い回す", async () => {
     mockDiscord((c) => {
       if (c.path === `/channels/${CHANNEL}`) return { id: CHANNEL, type: 0, permission_overwrites: [] };
