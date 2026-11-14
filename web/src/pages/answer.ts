@@ -157,7 +157,8 @@ export async function answerPage(pollId: string): Promise<void> {
             });
             // 回答の完了画面へ移る（広告の枠はこの画面にだけ出す。§6.4, §6.10.1）。
             // 調整の ID は # の後ろに置き、サーバーのログにも広告の枠にも送らない
-            location.assign(`/answered#p=${pollId}`);
+            // 完了画面も画面の言語のページへ（英語版は /en/answered。§6.12）
+            location.assign(`${tr("/answered", "/en/answered")}#p=${pollId}`);
           } catch (err) {
             message = notice("error", errorText(err, "answer", tr("保存できませんでした。", "Couldn't save.")));
             saveBtn.disabled = false;

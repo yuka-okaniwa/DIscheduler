@@ -19,6 +19,10 @@
   <!-- Google AdSense のサイトの所有確認（パブリッシャー ID。公開してよい値。docs/design.md §6.10.1） -->
   <meta name="google-adsense-account" content="ca-pub-7698368408631991">
   <meta name="color-scheme" content="dark">
+  <!-- origin:start --><!-- 日本語版と英語版の対応（docs/design.md §6.12） -->
+  <link rel="alternate" hreflang="ja" href="__PUBLIC_ORIGIN__/">
+  <link rel="alternate" hreflang="en" href="__PUBLIC_ORIGIN__/en/">
+  <link rel="alternate" hreflang="x-default" href="__PUBLIC_ORIGIN__/"><!-- origin:end -->
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/site.css">
   <link rel="stylesheet" href="/assets/lp.css">
@@ -40,6 +44,7 @@
           <li class="nav-optional"><a href="#admin">管理者の方へ</a></li>
           <li><a href="/manual/">マニュアル</a></li>
           <li class="nav-sm-hide"><a href="/security">セキュリティ</a></li>
+          <li class="nav-lang"><a class="lang-link" href="/en/" hreflang="en" lang="en" data-lang="en">English</a></li>
           <li><a class="btn btn-primary btn-small" href="https://discord.com/oauth2/authorize?client_id=__DISCORD_APPLICATION_ID__&amp;scope=bot+applications.commands&amp;permissions=17600775998464" rel="noopener noreferrer"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14"/><path d="M12 5v14"/></svg>追加する</a></li>
         </ul>
       </nav>
@@ -223,7 +228,7 @@
               <li><svg class="ic ic-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span>管理者権限を求めません</span></li>
               <li><svg class="ic ic-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span>メッセージの本文を読みません</span></li>
               <li><svg class="ic ic-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span>メールアドレス・IP アドレスを保存しません</span></li>
-              <li><svg class="ic ic-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span><code>@everyone</code> やロールへのメンションをしません</span></li>
+              <li><svg class="ic ic-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span><code>@here</code> へのメンションをしません。参加者のロール（ロールがなければ <code>@everyone</code>）へのメンションは、公開・確定のお知らせと予定のリマインドのときだけです</span></li>
               <!-- no-ad:start --><li><svg class="ic ic-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span>外部の解析ツールや広告を読み込みません</span></li><!-- no-ad:end --><!-- ad:start --><li><svg class="ic ic-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span>外部の解析ツールを読み込みません。広告はこのページ・セキュリティ方針・回答の完了画面にだけ、サイトから切り離した枠で表示します（拒否もできます）</span></li><!-- ad:end -->
             </ul>
           </div>
@@ -330,5 +335,6 @@
     </div>
   </footer>
   <!-- ad:start --><script src="/assets/ad-consent.js" defer></script><!-- ad:end -->
+  <script src="/assets/lang.js" defer></script>
 </body>
 </html>

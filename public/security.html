@@ -7,6 +7,10 @@
   <meta name="description" content="DIscheduler のセキュリティ方針。扱うデータ、保存期間、回答の公開範囲、主な対策、残っているリスク、脆弱性の報告窓口を公開しています。">
   <!-- Google AdSense のサイトの所有確認（パブリッシャー ID。公開してよい値。docs/design.md §6.10.1） -->
   <meta name="google-adsense-account" content="ca-pub-7698368408631991">
+  <!-- origin:start --><!-- 日本語版と英語版の対応（docs/design.md §6.12） -->
+  <link rel="alternate" hreflang="ja" href="__PUBLIC_ORIGIN__/security">
+  <link rel="alternate" hreflang="en" href="__PUBLIC_ORIGIN__/en/security">
+  <link rel="alternate" hreflang="x-default" href="__PUBLIC_ORIGIN__/security"><!-- origin:end -->
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="color-scheme" content="dark">
   <link rel="stylesheet" href="/assets/site.css">
@@ -29,6 +33,7 @@
           <li class="nav-optional"><a href="/#admin">管理者の方へ</a></li>
           <li><a href="/manual/">マニュアル</a></li>
           <li class="nav-sm-hide"><a href="/security" aria-current="page">セキュリティ</a></li>
+          <li class="nav-lang"><a class="lang-link" href="/en/security" hreflang="en" lang="en" data-lang="en">English</a></li>
         </ul>
       </nav>
     </div>
@@ -75,7 +80,7 @@
           <li>メッセージ本文を読みません（Message Content Intent 不使用）</li>
           <li>Bot を追加する前のメッセージ履歴も読みません（「メッセージ履歴を読む」権限を求めず、チャンネルのメッセージを取得する処理もありません）</li>
           <li>メールアドレス・IP アドレス・アバター画像を保存しません</li>
-          <li><code>@everyone</code> / <code>@here</code> / ロールへのメンションをしません</li>
+          <li><code>@here</code> へのメンションをしません。参加者を決めたロール（ロールがなければ <code>@everyone</code>）へのメンションは、公開時と確定のお知らせ、予定のリマインドのときだけです（確定のお知らせのメンションは 1 つの調整につき 1 時間に 3 回まで）</li>
           <!-- no-ad:start --><li>外部の解析ツール・広告・CDN を読み込みません</li><!-- no-ad:end -->
           <!-- ad:start --><li>外部の解析ツール・CDN を読み込みません。広告はトップページ・このページ・回答の完了画面にだけ、サイトから切り離した枠の中で表示し、拒否することもできます（作成・回答入力・集計の画面と Discord のメッセージには出しません。<a href="#ads">広告について</a>）</li><!-- ad:end -->
           <!-- donation:start --><li>寄付リンクは外部サービスへのただのリンクで、支援サービスのスクリプトや画像は読み込みません</li><!-- donation:end -->
@@ -181,6 +186,7 @@
           <table class="data">
             <thead><tr><th scope="col">日付</th><th scope="col">内容</th></tr></thead>
             <tbody>
+              <tr><td>2026年11月14日</td><td>英語版を公開。メンションについての記述を、実際の動き（参加者のロールか <code>@everyone</code> へのメンションを、お知らせとリマインドのときだけ行う）に合わせて訂正</td></tr>
               <tr><td>2026年11月14日</td><td>サイトのアドレスを discheduler.etlits.dev に変更<!-- ad:start -->。広告の枠のアドレスを ads.etlits.dev に変更<!-- ad:end --></td></tr>
               <tr><td>2026年11月13日</td><td>Bot を追加する前のメッセージ履歴を読まないことを追記</td></tr>
               <!-- ad:start --><tr><td>2026年11月11日</td><td>回答の完了画面への広告の表示について追記</td></tr><!-- ad:end -->
@@ -215,5 +221,6 @@
     </div>
   </footer>
   <!-- ad:start --><script src="/assets/ad-consent.js" defer></script><!-- ad:end -->
+  <script src="/assets/lang.js" defer></script>
 </body>
 </html>

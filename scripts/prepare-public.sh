@@ -2,7 +2,8 @@
 # デプロイ前に public/ の静的ページへ設定値を埋め込む（docs/design.md §6.10, §14）
 #
 #   DISCORD_APPLICATION_ID  必須。招待リンクの client_id（数字 17〜20 桁）
-#   DONATION_URL            任意。寄付リンクの URL（https://...）。Ko-fi のときは、リンクの近くに日本語の説明（__DONATION_NOTE__）を入れる
+#   DONATION_URL            任意。寄付リンクの URL（https://...）。Ko-fi のときは、リンクの近くに説明を入れる
+#                           （日本語のページは __DONATION_NOTE__、英語版のページ（en/）は __DONATION_NOTE_EN__）
 #   ADMAX_ID                任意。忍者AdMax の広告枠の ID（英小文字と数字の 32 文字）。LP とセキュリティ方針ページの広告の枠
 #   PUBLIC_ORIGIN           任意。正式な公開アドレス（https://...。末尾の / なし）。LP の正規 URL（canonical）と構造化データ
 #
@@ -25,7 +26,7 @@ set -euo pipefail
 
 dir="${1:-public}"
 shopt -s nullglob
-files=("$dir"/*.html "$dir"/manual/*.html)
+files=("$dir"/*.html "$dir"/manual/*.html "$dir"/en/*.html "$dir"/en/manual/*.html)
 if (( ${#files[@]} == 0 )); then
   echo "::error::$dir に HTML がありません" >&2
   exit 1
@@ -54,8 +55,11 @@ fi
 
 # --- 広告 ---
 donation_note=""
+donation_note_en=""
 if [[ "$donation_url" =~ ^https://(www\.)?ko-fi\.com(/|$) ]]; then
+  # src/shared/text.ts の KOFI_DONATION_NOTE・KOFI_DONATION_NOTE_EN と同じ文にする（変えるときは両方そろえる）
   donation_note="支援は Ko-fi（海外の支援サービス）で受け付けています。画面は英語ですが、金額を選んで、PayPal で支払えます。"
+  donation_note_en="Support is accepted through Ko-fi. Choose an amount and pay with PayPal."
 fi
 
 admax_id="${ADMAX_ID:-}"
@@ -71,9 +75,9 @@ for f in "${files[@]}"; do
     sed -i "s#__DONATION_URL__#${donation_url}#g" "$f"
     # 支援サービスの説明。src/shared/text.ts の donationNote と同じ文にする（変えるときは両方そろえる）。説明がなければ、その段落ごと消す
     if [[ -n "$donation_note" ]]; then
-      sed -i "s#__DONATION_NOTE__#${donation_note}#g" "$f"
+      sed -i -e "s#__DONATION_NOTE__#${donation_note}#g" -e "s#__DONATION_NOTE_EN__#${donation_note_en}#g" "$f"
     else
-      perl -0pi -e 's#<p class="[^"]*">__DONATION_NOTE__</p>\s*##g' "$f"
+      perl -0pi -e 's#<p class="[^"]*">__DONATION_NOTE(_EN)?__</p>\s*##g' "$f"
     fi
   else
     perl -0pi -e 's/<!-- donation:start -->.*?<!-- donation:end -->//gs; s/<!-- no-donation:(start|end) -->//g' "$f"
@@ -94,7 +98,7 @@ for f in "${files[@]}"; do
   fi
 
   # 置き換え漏れ・目印の残りがあれば止める
-  if grep -qE "__DISCORD_APPLICATION_ID__|__DONATION_URL__|__DONATION_NOTE__|__ADMAX_ID__|__PUBLIC_ORIGIN__|<!-- (no-)?(donation|ad|origin):" "$f"; then
+  if grep -qE "__DISCORD_APPLICATION_ID__|__DONATION_URL__|__DONATION_NOTE__|__DONATION_NOTE_EN__|__ADMAX_ID__|__PUBLIC_ORIGIN__|<!-- (no-)?(donation|ad|origin):" "$f"; then
     fail "$f の置き換えに失敗しました"
   fi
 done

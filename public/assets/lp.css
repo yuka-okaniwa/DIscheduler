@@ -76,12 +76,20 @@ body.lp {
 .lp .site-nav a.btn-primary .ic { width: 16px; height: 16px; }
 /* 狭い画面では、ヘッダーの「セキュリティ」を隠す（LP のボタンとフッターからも行ける） */
 @media (max-width: 480px) { .site-nav .nav-sm-hide { display: none; } }
+/* 言語の切り替え（日本語版と英語版。docs/design.md §6.12）。どの幅でも出す */
+.lp .site-nav a.lang-link { border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; color: var(--text-soft); }
+.lp .site-nav a.lang-link:hover { color: var(--text-strong); border-color: var(--text-muted); }
 @media (max-width: 420px) {
   .lp .site-nav a.btn-primary .ic { display: none; }
   .lp .brand { gap: 8px; }
   .brand-name { font-size: 1.05rem; }
   .lp .site-nav a { font-size: 0.82rem; padding: 8px 4px; }
-  .lp .site-nav a.btn-primary { padding: 7px 12px; }
+  .lp .site-nav a.btn-primary { padding: 7px 10px; }
+  .lp .site-nav a.lang-link { padding: 5px 6px; }
+}
+/* とても狭い画面で、ヘッダーに［追加する］もあるページ（トップページ）は、ロゴの横の名前を隠して横にはみ出さないようにする */
+@media (max-width: 380px) {
+  .lp .site-header:has(.site-nav a.btn-primary) .brand-name { display: none; }
 }
 
 /* ボタン */

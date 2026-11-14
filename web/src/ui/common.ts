@@ -335,7 +335,7 @@ export function showError(err: unknown, kind: PageKind = "link"): void {
       // 一覧ページの期限切れと、中継ページで使えなかったリンクは、サーバーのメッセージで受け取り方まで伝えるので、ここでは出さない
       e.status === 401 && !SELF_EXPLAINING.has(e.code) ? h("p", {}, reopenHint(kind)) : null,
       freeTier && donationFromError ? h("p", {}, tr("運営を支援していただけると、有料プランへの切り替えを検討できます: ", "With your support, we can consider moving to a paid plan: "), h("a", { href: donationFromError, rel: "noopener noreferrer" }, tr("運営を支援する", "Support DIscheduler"))) : null,
-      h("p", {}, h("a", { href: "/manual/" }, tr("DIscheduler のマニュアルへ", "Go to the DIscheduler manual"))),
+      h("p", {}, h("a", { href: tr("/manual/", "/en/manual/") }, tr("DIscheduler のマニュアルへ", "Go to the DIscheduler manual"))),
     ),
   );
 }

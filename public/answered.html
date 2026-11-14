@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>回答を保存しました｜DIscheduler</title>
   <meta name="robots" content="noindex, nofollow">
+  <!-- origin:start --><!-- 日本語版と英語版の対応（docs/design.md §6.12） -->
+  <link rel="alternate" hreflang="ja" href="__PUBLIC_ORIGIN__/answered">
+  <link rel="alternate" hreflang="en" href="__PUBLIC_ORIGIN__/en/answered">
+  <link rel="alternate" hreflang="x-default" href="__PUBLIC_ORIGIN__/answered"><!-- origin:end -->
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="color-scheme" content="dark">
   <link rel="stylesheet" href="/assets/site.css">
@@ -19,6 +23,11 @@
         <span class="brand-mark"><img src="/favicon.svg" alt="" width="36" height="36"></span>
         <span class="brand-name">DIscheduler</span>
       </a>
+      <nav class="site-nav" aria-label="メインメニュー">
+        <ul>
+          <li class="nav-lang"><a class="lang-link" href="/en/answered" hreflang="en" lang="en" data-lang="en">English</a></li>
+        </ul>
+      </nav>
     </div>
   </header>
 
@@ -51,5 +60,6 @@
   </main>
   <script src="/assets/answered.js" defer></script>
   <!-- ad:start --><script src="/assets/ad-consent.js" defer></script><!-- ad:end -->
+  <script src="/assets/lang.js" defer></script>
 </body>
 </html>

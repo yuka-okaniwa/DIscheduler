@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Add date options | Manual | DIscheduler</title>
+  <meta name="description" content="How to add date options in bulk with the calendar on the edit page: ranges, times and recently used times.">
+  <!-- origin:start --><!-- 日本語版と英語版の対応（docs/design.md §6.12） -->
+  <link rel="alternate" hreflang="ja" href="__PUBLIC_ORIGIN__/manual/slots">
+  <link rel="alternate" hreflang="en" href="__PUBLIC_ORIGIN__/en/manual/slots">
+  <link rel="alternate" hreflang="x-default" href="__PUBLIC_ORIGIN__/manual/slots"><!-- origin:end -->
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="color-scheme" content="dark">
+  <link rel="stylesheet" href="/assets/site.css">
+  <link rel="stylesheet" href="/assets/lp.css">
+  <!-- アイコン: Lucide（ISC License。/assets/lucide-LICENSE.txt）。英語版（docs/design.md §6.12） -->
+  <!-- マニュアルの英語版（docs/design.md §6.2 S8、§6.12）。日本語版を直したら、こちらも直す -->
+</head>
+<body class="lp">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="/en/">
+        <span class="brand-mark"><img src="/favicon.svg" alt="" width="36" height="36"></span>
+        <span class="brand-name">DIscheduler</span>
+      </a>
+      <nav class="site-nav" aria-label="Main menu">
+        <ul>
+          <li class="nav-optional"><a href="/en/#features">Features</a></li>
+          <li class="nav-optional"><a href="/en/#how">How it works</a></li>
+          <li class="nav-optional"><a href="/en/#admin">For admins</a></li>
+          <li><a href="/en/manual/" aria-current="page">Manual</a></li>
+          <li class="nav-sm-hide"><a href="/en/security">Security</a></li>
+          <li class="nav-lang"><a class="lang-link" href="/manual/slots" hreflang="ja" lang="ja" data-lang="ja">日本語</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="doc manual">
+    <div class="container">
+      <nav class="toc manual-toc" id="toc" aria-label="Manual contents">
+        <h2>Manual</h2>
+        <ol>
+          <li><a href="/en/manual/">Introduction</a></li>
+          <li><a href="/en/manual/install">Add to your server</a></li>
+          <li><a href="/en/manual/channels">Choose where it works</a></li>
+          <li><a href="/en/manual/create">Create a poll</a></li>
+          <li><a href="/en/manual/slots" aria-current="page">Add date options</a></li>
+          <li><a href="/en/manual/choices">Change the answer choices</a></li>
+          <li><a href="/en/manual/participants">Choose participants</a></li>
+          <li><a href="/en/manual/publish">Publish</a></li>
+          <li><a href="/en/manual/answer">Answer</a></li>
+          <li><a href="/en/manual/summary">View results and confirm</a></li>
+          <li><a href="/en/manual/message">Updating the poll message</a></li>
+          <li><a href="/en/manual/manage">Manage and delete polls</a></li>
+          <li><a href="/en/manual/troubleshooting">Troubleshooting</a></li>
+        </ol>
+      </nav>
+
+      <article class="doc-body">
+        <p class="manual-crumb"><a href="/en/manual/">Manual</a><span aria-hidden="true"> › </span>Add date options</p>
+        <p class="toc-jump"><a href="#toc">Go to contents</a></p>
+        <h1>Add date options</h1>
+        <p>Add date options in this order: 1. select dates → 2. choose a time → [+ Add selected dates]. You can create options with the same time for as many days as you like at once.</p>
+
+        <h2 id="dates">1. Select dates</h2>
+        <ul>
+          <li><strong>One day at a time</strong>: each tap on a date selects or deselects it. You can select several.</li>
+          <li><strong>A range</strong>: tap the first and last days to select every day in between. After choosing the first day, you can move to the next month with ▶ and then choose the last day.</li>
+          <li>On a computer, even in "One day at a time" mode, Shift-click selects the range from the day you clicked last.</li>
+          <li>Days before today can't be selected. Use [Clear selection] to start over.</li>
+        </ul>
+
+        <h2 id="time">2. Choose a time</h2>
+        <ul>
+          <li>Enter the start and end times. When you set the start, the end is set to one hour later automatically (you can change it afterward).</li>
+          <li>The clock button opens a time picker (in browsers such as Chrome and Edge).</li>
+          <li>If the end is earlier than the start, the option spans midnight (e.g. 23:00–1:00).</li>
+          <li>For an option without a time, check "All day".</li>
+          <li><strong>Recently used</strong>: up to 3 time ranges recently used in the server are shown, newest first. Press one to use its start and end times.</li>
+        </ul>
+
+        <h2 id="add">3. Add them as options</h2>
+        <p>Press [+ Add selected dates] to create an option with the chosen time for each selected date. They appear in "3. Date options".</p>
+        <p class="note">Selecting dates alone doesn't create options. Be sure to press [+ Add selected dates]. If you try to save or publish without pressing it, you'll be asked to confirm.</p>
+
+        <h2 id="list">Date options list</h2>
+        <ul>
+          <li>Options are listed in date order. Delete one with ×.</li>
+          <li>You can add up to 30 options.</li>
+          <li>You can add options even after publishing. Deleting an option that has answers asks for confirmation (its answers are deleted too).</li>
+        </ul>
+
+        <h2 id="timezone">Time zone</h2>
+        <ul>
+          <li>Date options are entered in the time zone set under "Time zone" on the edit page. It starts as your browser's time zone (or Japan time if it can't be determined). Type in the field to filter the list (e.g. <code>Tokyo</code>, <code>Japan</code>, <code>+9</code>).</li>
+          <li>Participants see the times in their own browser's time zone. If it differs from the poll's time zone, both times are shown side by side.</li>
+          <li>Changing the time zone after entering options doesn't change the options' times (the same moments in time); only how they are shown changes.</li>
+        </ul>
+
+        <nav class="pager" aria-label="Previous and next pages">
+          <a class="prev" href="/en/manual/create"><small>Previous</small><span>Create a poll</span></a>
+          <a class="next" href="/en/manual/choices"><small>Next</small><span>Change the answer choices</span></a>
+        </nav>
+      
+</article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <a class="footer-brand" href="/en/"><span class="brand-mark brand-mark-sm"><img src="/favicon.svg" alt="" width="28" height="28"></span>DIscheduler</a>
+      <ul>
+        <li><a href="/en/">Home</a></li>
+        <li><a href="/en/manual/">Manual</a></li>
+        <li><a href="/en/security">Security policy</a></li>
+        <li><a href="/en/security#report">Report a vulnerability</a></li>
+        <!-- donation:start --><li><a href="/en/#support">Support</a></li><!-- donation:end -->
+        <li><a href="https://github.com/etlit-r/DIscheduler" rel="noopener noreferrer"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>GitHub</a></li>
+      </ul>
+    </div>
+  </footer>
+  <script src="/assets/lang.js" defer></script>
+</body>
+</html>

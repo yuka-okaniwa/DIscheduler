@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>View results and confirm | Manual | DIscheduler</title>
+  <meta name="description" content="For organizers: reading the results, the best option (★), reminders, confirming dates and creating Discord events.">
+  <!-- origin:start --><!-- 日本語版と英語版の対応（docs/design.md §6.12） -->
+  <link rel="alternate" hreflang="ja" href="__PUBLIC_ORIGIN__/manual/summary">
+  <link rel="alternate" hreflang="en" href="__PUBLIC_ORIGIN__/en/manual/summary">
+  <link rel="alternate" hreflang="x-default" href="__PUBLIC_ORIGIN__/manual/summary"><!-- origin:end -->
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="color-scheme" content="dark">
+  <link rel="stylesheet" href="/assets/site.css">
+  <link rel="stylesheet" href="/assets/lp.css">
+  <!-- アイコン: Lucide（ISC License。/assets/lucide-LICENSE.txt）。英語版（docs/design.md §6.12） -->
+  <!-- マニュアルの英語版（docs/design.md §6.2 S8、§6.12）。日本語版を直したら、こちらも直す -->
+</head>
+<body class="lp">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="/en/">
+        <span class="brand-mark"><img src="/favicon.svg" alt="" width="36" height="36"></span>
+        <span class="brand-name">DIscheduler</span>
+      </a>
+      <nav class="site-nav" aria-label="Main menu">
+        <ul>
+          <li class="nav-optional"><a href="/en/#features">Features</a></li>
+          <li class="nav-optional"><a href="/en/#how">How it works</a></li>
+          <li class="nav-optional"><a href="/en/#admin">For admins</a></li>
+          <li><a href="/en/manual/" aria-current="page">Manual</a></li>
+          <li class="nav-sm-hide"><a href="/en/security">Security</a></li>
+          <li class="nav-lang"><a class="lang-link" href="/manual/summary" hreflang="ja" lang="ja" data-lang="ja">日本語</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="doc manual">
+    <div class="container">
+      <nav class="toc manual-toc" id="toc" aria-label="Manual contents">
+        <h2>Manual</h2>
+        <ol>
+          <li><a href="/en/manual/">Introduction</a></li>
+          <li><a href="/en/manual/install">Add to your server</a></li>
+          <li><a href="/en/manual/channels">Choose where it works</a></li>
+          <li><a href="/en/manual/create">Create a poll</a></li>
+          <li><a href="/en/manual/slots">Add date options</a></li>
+          <li><a href="/en/manual/choices">Change the answer choices</a></li>
+          <li><a href="/en/manual/participants">Choose participants</a></li>
+          <li><a href="/en/manual/publish">Publish</a></li>
+          <li><a href="/en/manual/answer">Answer</a></li>
+          <li><a href="/en/manual/summary" aria-current="page">View results and confirm</a></li>
+          <li><a href="/en/manual/message">Updating the poll message</a></li>
+          <li><a href="/en/manual/manage">Manage and delete polls</a></li>
+          <li><a href="/en/manual/troubleshooting">Troubleshooting</a></li>
+        </ol>
+      </nav>
+
+      <article class="doc-body">
+        <p class="manual-crumb"><a href="/en/manual/">Manual</a><span aria-hidden="true"> › </span>View results and confirm</p>
+        <p class="toc-jump"><a href="#toc">Go to contents</a></p>
+        <h1>View results and confirm</h1>
+        <h2 id="table">Reading the results</h2>
+        <ul>
+          <li>The results page lists, for each option, the number of people per answer choice and the number who haven't answered.</li>
+          <li>You can sort by date or by score.</li>
+          <li>[Show by member] shows a table of who chose what for each option. All participants can see it.</li>
+        </ul>
+
+        <h2 id="star">How the best option (★) is chosen</h2>
+        <p>Options are compared in this order, and ★ goes to the first one that comes out ahead:</p>
+        <ol>
+          <li>Fewer "not available" answers</li>
+          <li>Higher total score (by default ○ is 4 points, △ is 2 and × is 0)</li>
+          <li>More "available" answers</li>
+          <li>Earlier date</li>
+        </ol>
+
+        <h2 id="remind">Remind people who haven't answered</h2>
+        <p>Press [Remind people who haven't answered] to post a message to the channel that mentions everyone who hasn't answered yet. This can be done once every 12 hours per poll. It isn't available after a date is confirmed.</p>
+
+        <h2 id="fix">Confirm the date</h2>
+        <ol>
+          <li>In the results, press [Confirm] for the option you want to confirm.</li>
+          <li>If you like, check "Create a Discord event" and choose the location (a voice channel or any text). The voice channel or location set as the server default is filled in; if none is set, "Discord" is used (<a href="/en/manual/channels#event-location">setting the default</a>).</li>
+          <li>Press [Confirm this date]. The date is confirmed and the poll message changes to show it as confirmed.</li>
+        </ol>
+        <p class="note">Confirming alone doesn't post an announcement to the channel. Post it with [Announce the dates] below. If a Discord event can't be created (for example, because the bot lacks the Create Events permission), the date is still confirmed and the page shows why.</p>
+
+        <h2 id="multi">Confirm more than one date</h2>
+        <p>A poll can have several confirmed dates (for example, an event held over two days). Pressing [Confirm] on another option keeps the dates already confirmed and adds the new one. A Discord event can be created for each confirmed date.</p>
+
+        <h2 id="unfix">Cancel a confirmation</h2>
+        <ul>
+          <li>Press [Cancel confirmation] on a confirmed option to cancel it. The Discord event created for that date is deleted.</li>
+          <li>When no confirmed dates remain, the poll goes back to open (or closed, if the deadline has passed).</li>
+          <li>If you change the time of a confirmed option on the edit page, its Discord event's time changes too. To delete a confirmed option, cancel its confirmation first.</li>
+          <li>If anyone changes their answer after a date is confirmed, the confirmed option's row shows who changed what, under "Changed after confirmation".</li>
+        </ul>
+
+        <h2 id="announce">Announce the dates</h2>
+        <ul>
+          <li>When you've finished confirming or cancelling, press [Announce the dates] under "Announcement" on the results page. It posts one message to the channel listing the dates confirmed now and any dates cancelled since the last announcement.</li>
+          <li>"Changes not yet announced" shows how many confirmations and cancellations there have been since the last announcement.</li>
+          <li>You can choose "Mention the participants' role in the announcement" (or "Mention @everyone in the announcement" if participants weren't chosen by role). Mentions are limited to 3 per poll per hour; beyond that, the message is posted without a mention.</li>
+          <li>Announcements for the same poll can be posted up to 10 times per hour.</li>
+        </ul>
+
+        <h2 id="day-reminder">Event reminders</h2>
+        <ul>
+          <li>As a confirmed date approaches, a reminder is posted to the channel automatically. If several dates are confirmed, one is posted for each date.</li>
+          <li>Under "Event reminder" on the edit page, choose "On the day of the event" or "The day before the event" and a time (hourly, 0:00 to 23:00). The default is 17:00 on the day of the event. The time is in the poll's time zone.</li>
+          <li><strong>No reminder is posted if that time would be after the event starts.</strong><br>For example, with the default of 17:00 on the day, events that start before 17:00 get no reminder, so choose "The day before the event" for morning or midday events. For all-day events, a reminder is posted if the time is within that day.</li>
+          <li>The results page shows when the reminder will be posted under each confirmed date, for example "Reminder: Thu, Nov 19 17:00".</li>
+          <li>The message gives the date and time, for example "(Title) starts at November 7, 2026 1:00 PM." (shown in each viewer's time zone). For all-day events it reads "(Title) is on Sat, Nov 7 (all day)."</li>
+          <li>For a date confirmed after its reminder time has passed, the reminder is posted within an hour. If you press [Announce the dates] before that, the announcement includes a note such as "starts in 3 hours", which takes the place of the reminder.</li>
+          <li>It mentions the role if participants were chosen by role, or @everyone otherwise. Without the bot's "Mention @everyone, @here, and All Roles" permission, the mention is shown but no one is notified.</li>
+          <li>Only one reminder is posted per date, and none for cancelled dates.</li>
+          <li>Messages posted to the channel are in the poll's language (the Discord language of the person who created it).</li>
+        </ul>
+
+        <nav class="pager" aria-label="Previous and next pages">
+          <a class="prev" href="/en/manual/answer"><small>Previous</small><span>Answer</span></a>
+          <a class="next" href="/en/manual/message"><small>Next</small><span>Updating the poll message</span></a>
+        </nav>
+      
+</article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <a class="footer-brand" href="/en/"><span class="brand-mark brand-mark-sm"><img src="/favicon.svg" alt="" width="28" height="28"></span>DIscheduler</a>
+      <ul>
+        <li><a href="/en/">Home</a></li>
+        <li><a href="/en/manual/">Manual</a></li>
+        <li><a href="/en/security">Security policy</a></li>
+        <li><a href="/en/security#report">Report a vulnerability</a></li>
+        <!-- donation:start --><li><a href="/en/#support">Support</a></li><!-- donation:end -->
+        <li><a href="https://github.com/etlit-r/DIscheduler" rel="noopener noreferrer"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>GitHub</a></li>
+      </ul>
+    </div>
+  </footer>
+  <script src="/assets/lang.js" defer></script>
+</body>
+</html>

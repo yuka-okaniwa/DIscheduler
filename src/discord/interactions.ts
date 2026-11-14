@@ -402,9 +402,9 @@ export function helpText(origin: string, lang: Lang = "ja"): string {
       "・Server admins can choose the channels where the commands work in Server Settings → Integrations → DIscheduler.",
       "・Server admins can set defaults for choosing participants (channel, role or manual) and for the Discord event location with [Server defaults] in `/schedule`.",
       "",
-      `About: ${origin}/`,
-      `Manual: ${origin}/manual/`,
-      `Security policy: ${origin}/security`,
+      `About: ${origin}/en/`,
+      `Manual: ${origin}/en/manual/`,
+      `Security policy: ${origin}/en/security`,
     ].join("\n");
   }
   return [

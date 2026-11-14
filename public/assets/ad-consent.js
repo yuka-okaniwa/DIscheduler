@@ -6,6 +6,9 @@
 (() => {
   const KEY = "discheduler.ads";
   const FRAME_URL = "https://ads.etlits.dev/frame";
+  // ページの言語（<html lang>）に合わせて文言を選ぶ（英語版のページは /en/ の下。docs/design.md §6.12）
+  const en = document.documentElement.lang === "en";
+  const t = (ja, enText) => (en ? enText : ja);
 
   const saved = () => {
     try {
@@ -40,7 +43,7 @@
         box.replaceChildren(
           el("iframe", {
             src: FRAME_URL,
-            title: "広告",
+            title: t("広告", "Advertisement"),
             width: "300",
             height: "250",
             loading: "lazy",
@@ -49,12 +52,12 @@
             sandbox: "allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox",
           }),
         );
-        const btn = el("button", { type: "button", class: "ad-toggle" }, "広告と広告会社の Cookie を拒否する");
+        const btn = el("button", { type: "button", class: "ad-toggle" }, t("広告と広告会社の Cookie を拒否する", "Decline ads and the ad network's cookies"));
         btn.addEventListener("click", () => update("denied"));
         note.replaceChildren(btn);
       } else {
-        box.replaceChildren(el("p", { class: "ad-off" }, "広告を表示していません。広告会社には何も送っていません。"));
-        const btn = el("button", { type: "button", class: "ad-toggle" }, "広告を表示する（広告会社の Cookie を許可）");
+        box.replaceChildren(el("p", { class: "ad-off" }, t("広告を表示していません。広告会社には何も送っていません。", "Ads are off. Nothing is sent to the ad network.")));
+        const btn = el("button", { type: "button", class: "ad-toggle" }, t("広告を表示する（広告会社の Cookie を許可）", "Show ads (allow the ad network's cookies)"));
         btn.addEventListener("click", () => update("granted"));
         note.replaceChildren(btn);
       }

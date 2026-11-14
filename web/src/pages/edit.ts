@@ -780,7 +780,7 @@ export async function editPage(pollId: string): Promise<void> {
                   h("h1", {}, tr("調整を削除しました", "Poll deleted")),
                   h("p", {}, tr("データはすべて削除されました。", "All data has been deleted.")),
                   ...(r.warnings ?? []).map((w) => notice("warn", w)),
-                  h("p", {}, h("a", { href: "/manual/" }, tr("DIscheduler のマニュアルへ", "Go to the DIscheduler manual"))),
+                  h("p", {}, h("a", { href: tr("/manual/", "/en/manual/") }, tr("DIscheduler のマニュアルへ", "Go to the DIscheduler manual"))),
                   donationLine(d.donationUrl),
                 ),
               );
