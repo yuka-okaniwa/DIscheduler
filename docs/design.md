@@ -766,7 +766,7 @@ S2 の [変更] を押すと、ひな形から選ぶか、自分で編集でき�
   - スクリプトが動かない環境では広告を出さない。
 - **出し分け**：GitHub の `production` 環境の変数 `ADMAX_ID`（広告コードの `https://adm.shinobi.jp/s/` に続く 32 文字）があるときだけ、`scripts/prepare-public.sh` が `<!-- ad:start -->`〜`<!-- ad:end -->` を残して `ads/public/frame.html` に ID を埋め込み、デプロイで広告の枠の Worker も公開する。ないときは広告の枠・説明・`ad-consent.js` を消し、広告の枠の Worker はデプロイしない。セキュリティ方針の「しないこと」なども、広告の有無で文言を切り替える（`<!-- no-ad:start -->`）。
 - **Google AdSense の審査**：AdSense にはサイトの単位であるドメイン `etlits.dev` を登録し（以前は `<プロジェクト名>.pages.dev`）、所有の確認にはメタタグ `<meta name="google-adsense-account" content="ca-pub-7698368408631991">` を LP とセキュリティ方針ページに置く。メタタグは情報を示すだけで、スクリプトは読み込まない（CSP は変わらない）。承認されたら、忍者AdMax と AdSense のどちらを使うかを決め直す。
-- **ads.txt**：広告枠の販売を許可した事業者の一覧。AdSense の行（`google.com, pub-7698368408631991, DIRECT, f08c47fec0942fa0`）を `public/ads.txt` に置き、`robots.txt` で読み取りを許す。独自ドメインに移したので、サイトの単位は `etlits.dev` になり、`ads.txt` は `https://etlits.dev/ads.txt` で読めなければならない。`etlits.dev` そのものには何も置いていないので、Cloudflare のリダイレクトルールで `https://etlits.dev/ads.txt` を `https://discheduler.etlits.dev/ads.txt` へ転送する（ads.txt の仕様では、同じドメインの中への転送はたどってよい。§14.1.2）。
+- **ads.txt**：広告枠の販売を許可した事業者の一覧。AdSense の行（`google.com, pub-7698368408631991, DIRECT, f08c47fec0942fa0`）を `public/ads.txt` に置き、`robots.txt` で読み取りを許す。独自ドメインに移したので、サイトの単位は `etlits.dev` になり、`ads.txt` は `https://etlits.dev/ads.txt` で読めなければならない。`etlits.dev` そのものには何も置いていないので、Cloudflare のリダイレクトルールで `etlits.dev` へのアクセスをすべて、同じパスのまま `https://discheduler.etlits.dev` へ転送する（ads.txt の仕様では、同じドメインの中への転送はたどってよい。§14.1.2）。トップページも転送されるので、AdSense の所有確認は LP のメタタグでも ads.txt でもできる。`etlits.dev` をほかの用途に使うときは、転送を `/ads.txt` だけに絞る。
 - **開示**：セキュリティ方針ページに「広告について」（表示する場所、切り離し方、広告会社に届く情報と Cookie、拒否する方法）と、残っているリスク（不適切な広告が出る可能性）を書く。
 
 
@@ -1246,7 +1246,7 @@ DIscheduler/
 | タイムゾーン | 設定変更可能。既定はブラウザのタイムゾーン、不明なら `Asia/Tokyo` | 海外のメンバーにも対応するため | §6.7 |
 | データ保持期間 | 締切・確定から 6 ヶ月（180 日）後に自動削除 | 振り返りや再調整に使えるようにするため | §7.4 |
 | 運営費 | 寄付リンクを LP・完了画面・無料枠超過の画面に置く。広告は LP・セキュリティ方針ページ・回答の完了画面（S3a）だけに、別オリジンで切り離した枠で出し、閲覧者が拒否できるようにする（§6.10.1）。無料枠を超えたときはそのまま伝える | 回答や名前が出る画面に広告のスクリプトを入れると読める状態になり、セキュリティ方針に反するため。広告は公開ページだけに、サイトから切り離して出す | §6.10, §6.10.1, §9.1 |
-| ドメイン | 独自ドメイン `etlits.dev` のサブドメイン `discheduler.etlits.dev`（広告の枠は `ads.etlits.dev`）。以前のアドレス（`*.pages.dev`、`discheduler.etlits.workers.dev`）は正式なアドレスへ転送 | サービスのアドレスを Cloudflare のサービス名に左右されない、覚えやすいものにするため。`etlits.dev` 本体はほかの用途にも使えるよう空けておく | §9, §14 |
+| ドメイン | 独自ドメイン `etlits.dev` のサブドメイン `discheduler.etlits.dev`（広告の枠は `ads.etlits.dev`）。以前のアドレス（`*.pages.dev`、`discheduler.etlits.workers.dev`）は正式なアドレスへ転送 | サービスのアドレスを Cloudflare のサービス名に左右されない、覚えやすいものにするため。`etlits.dev` 本体は、今は `discheduler.etlits.dev` へ転送し、ほかの用途にも使えるよう空けておく | §9, §14 |
 
 - Server Members Intent は、Bot の導入サーバーが 100 未満なら Discord の審査なしで、Developer Portal の設定だけで有効化できる。100 サーバー以上になる場合は Discord への申請が必要。
 
@@ -1343,7 +1343,12 @@ flowchart LR
 2. **GitHub の `PUBLIC_ORIGIN` を変える**：`production` 環境の変数 `PUBLIC_ORIGIN` を `https://discheduler.etlits.dev` にする。
 3. **デプロイする**：`main` にマージして承認する。以後、`<プロジェクト名>.pages.dev` と旧 Worker のアドレスへの GET は `discheduler.etlits.dev` に転送される（Discord に投稿済みのリンクもそのまま使える。入力リンクの `#t=` も保たれる）。ログインのセッション（Cookie）はアドレスごとなので、移ったあとは Discord のボタンからもう一度開いてもらう。
 4. **Discord の Interactions Endpoint URL を変える**：Developer Portal の「General Information」で `https://discheduler.etlits.dev/discord/interactions` にして保存する。切り替えるまでの間も、以前のアドレスで Discord からの通信を受けられる（§14 の表のあと）。
-5. **ads.txt を etlits.dev から読めるようにする**（AdSense を使うとき）：`etlits.dev` のゾーンの「DNS」で、`etlits.dev` に Proxied（オレンジの雲）の `AAAA` レコード（値 `100::`）を作り、「Rules → Redirect Rules」で「URI Full が `https://etlits.dev/ads.txt` と等しい」ときに `https://discheduler.etlits.dev/ads.txt` へ 301 で転送するルールを作る。AdSense の「サイト」には `etlits.dev` を追加する。
+5. **etlits.dev を DIscheduler へ転送する**（AdSense の ads.txt と所有確認のため。etlits.dev を開いた人にエラーを見せないためにも）：
+   - `etlits.dev` のゾーンの「DNS → レコード」で、タイプ `AAAA`、名前 `@`、IPv6 アドレス `100::`、プロキシ ステータスをオン（オレンジの雲）、TTL 自動のレコードを作る。`100::` はどこにもつながらないアドレスで、Cloudflare がアクセスを受けて次の転送のルールを動かすためだけに置く。
+   - 「ルール → Redirect Rules」で、ワイルドカードパターンのルールを作る。リクエスト URL `https://etlits.dev/*`、ターゲット URL `https://discheduler.etlits.dev/${1}`、ステータスコード `301`、クエリ文字列を保持する。
+   - `https://etlits.dev/ads.txt` を開いて、`public/ads.txt` の内容が出ることを確かめる。
+   - AdSense の「サイト」には `etlits.dev`（サブドメインではなく、ドメインそのもの）を追加する。
+   - あとで `etlits.dev` をほかの用途（ブログなど）に使うときは、このルールを `https://etlits.dev/ads.txt` だけを `https://discheduler.etlits.dev/ads.txt` へ転送する形に変える。
 6. **広告の枠**（広告を再開するとき）：API トークンに `etlits.dev` の「Zone > Workers Routes: Edit」を足す。`ads/wrangler.jsonc` の `routes` で、デプロイ時に `ads.etlits.dev` が広告の枠の Worker に結び付く。忍者AdMax などの広告ネットワークには、新しいサイトのアドレスを登録し直す。
 ### 14.2 ワークフローの安全策
 - 静的ページへの設定値（招待リンクの Application ID、寄付リンク）の埋め込みは `scripts/prepare-public.sh` で行う。値の形式を検証し、不正なら止める。
