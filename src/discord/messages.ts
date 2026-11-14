@@ -1,17 +1,25 @@
 // チャンネルに投稿するメッセージの組み立て（docs/design.md §5.5, §6.6）
 // 個人ごとの回答は載せず、候補ごとの「参加できる」区分の人数と回答率だけを出す。
+// チャンネルの全員が読むので、言語は見る人ごとではなく、調整の言語（polls.lang。§6.12）で書く。
 import type { ChoiceRow, ParticipantRow, PollRow, SlotRow, AnswerRow } from "../db";
 import { bestSlotId, effectiveStatus, tally } from "../shared/model";
 import { formatDate } from "../shared/time";
+import { translator, type Lang } from "../shared/i18n";
 
 /** Discord の Markdown として解釈される記号をエスケープする */
 export function escapeMarkdown(s: string): string {
   return s.replace(/([\\*_~`|>#[\]()\-:<@])/g, "\\$1");
 }
 
-function slotLabel(s: SlotRow): string {
-  if (s.all_day) return `<t:${s.start_at}:D> 終日`;
-  return s.end_at ? `<t:${s.start_at}:f>〜<t:${s.end_at}:t>` : `<t:${s.start_at}:f>〜`;
+function slotLabel(s: SlotRow, lang: Lang): string {
+  if (s.all_day) return lang === "en" ? `<t:${s.start_at}:D> all day` : `<t:${s.start_at}:D> 終日`;
+  const dash = lang === "en" ? "–" : "〜";
+  return s.end_at ? `<t:${s.start_at}:f>${dash}<t:${s.end_at}:t>` : `<t:${s.start_at}:f>${dash}`;
+}
+
+/** 調整のタイトル（なければ「日程調整」）。Markdown の記号は無効にする */
+export function pollTitle(poll: Pick<PollRow, "title" | "lang">): string {
+  return escapeMarkdown(poll.title ?? (poll.lang === "en" ? "Scheduling poll" : "日程調整"));
 }
 
 export interface MessageData {
@@ -28,14 +36,16 @@ export const NO_MENTIONS = { parse: [] as string[] };
 export function buildPollMessage(d: MessageData) {
   const { poll, slots, choices, participants, answers, now } = d;
   const status = effectiveStatus(poll.status, poll.deadline_at, now);
-  const t = tally(
+  const tl = tally(
     slots.map((s) => ({ id: s.id, startAt: s.start_at })),
     choices,
     answers.map((a) => ({ slotId: a.slot_id, userId: a.user_id, choiceId: a.choice_id })),
   );
-  const best = bestSlotId(slots.map((s) => ({ id: s.id, startAt: s.start_at })), t);
+  const best = bestSlotId(slots.map((s) => ({ id: s.id, startAt: s.start_at })), tl);
   const answered = new Set(answers.map((a) => a.user_id)).size;
   const okLabel = choices.filter((c) => c.kind === "ok").map((c) => c.symbol).join("");
+  const L = poll.lang;
+  const t = translator(L);
 
   const lines: string[] = [];
   if (poll.description) lines.push(escapeMarkdown(poll.description), "");
@@ -43,26 +53,37 @@ export function buildPollMessage(d: MessageData) {
   const fixedSlots = slots.filter((s) => s.fixed_at !== null);
   if (status === "fixed" && fixedSlots.length) {
     for (const fixed of fixedSlots) {
-      lines.push(`**確定: ${slotLabel(fixed)}**（参加できる人: ${t.get(fixed.id)?.ok ?? 0} 人）`);
+      const ok = tl.get(fixed.id)?.ok ?? 0;
+      lines.push(t(`**確定: ${slotLabel(fixed, L)}**（参加できる人: ${ok} 人）`, `**Confirmed: ${slotLabel(fixed, L)}** (available: ${ok})`));
     }
-    lines.push(`（人数は <t:${now}:f> 時点）`);
+    lines.push(t(`（人数は <t:${now}:f> 時点）`, `(counts as of <t:${now}:f>)`));
   } else if (status === "closed") {
-    lines.push("締切を過ぎました（回答の入力・変更はできます）");
+    lines.push(t("締切を過ぎました（回答の入力・変更はできます）", "The deadline has passed (you can still enter or change your answer)"));
   } else if (poll.deadline_at) {
-    lines.push(`締切: <t:${poll.deadline_at}:f>（<t:${poll.deadline_at}:R>）`);
+    lines.push(t(`締切: <t:${poll.deadline_at}:f>（<t:${poll.deadline_at}:R>）`, `Deadline: <t:${poll.deadline_at}:f> (<t:${poll.deadline_at}:R>)`));
   }
-  lines.push(`回答: ${answered}/${participants.length} 名`, "", `**候補**（${okLabel} の人数）`);
+  lines.push(
+    t(`回答: ${answered}/${participants.length} 名`, `Answered: ${answered}/${participants.length}`),
+    "",
+    t(`**候補**（${okLabel} の人数）`, `**Date options** (number of ${okLabel})`),
+  );
   for (const s of slots) {
     const mark = s.fixed_at !== null ? "✅" : s.id === best ? "★" : "・";
-    lines.push(`${mark} ${slotLabel(s)}　${t.get(s.id)?.ok ?? 0} 人`);
+    lines.push(`${mark} ${slotLabel(s, L)}　${t(`${tl.get(s.id)?.ok ?? 0} 人`, String(tl.get(s.id)?.ok ?? 0))}`);
   }
-  lines.push("", "［回答する］から、あなた専用の入力画面を開けます。回答は参加者同士で共有されます。");
+  lines.push(
+    "",
+    t(
+      "［回答する］から、あなた専用の入力画面を開けます。回答は参加者同士で共有されます。",
+      "Press [Answer] to open your own answer page. Answers are shared among the participants.",
+    ),
+  );
 
   return {
     content: "",
     embeds: [
       {
-        title: escapeMarkdown(poll.title ?? "日程調整").slice(0, 256),
+        title: pollTitle(poll).slice(0, 256),
         description: lines.join("\n").slice(0, 4000),
         color: status === "fixed" ? 0x157f4c : 0x4f46e5,
         footer: { text: "DIscheduler" },
@@ -72,9 +93,9 @@ export function buildPollMessage(d: MessageData) {
       {
         type: 1,
         components: [
-          { type: 2, style: 1, label: "回答する", custom_id: `answer:${poll.id}` },
-          { type: 2, style: 2, label: "集計を見る", custom_id: `view:${poll.id}` },
-          { type: 2, style: 2, label: "使い方", custom_id: "help" },
+          { type: 2, style: 1, label: t("回答する", "Answer"), custom_id: `answer:${poll.id}` },
+          { type: 2, style: 2, label: t("集計を見る", "View results"), custom_id: `view:${poll.id}` },
+          { type: 2, style: 2, label: t("使い方", "Help"), custom_id: "help" },
         ],
       },
     ],
@@ -82,10 +103,11 @@ export function buildPollMessage(d: MessageData) {
   };
 }
 
-export function buildDeletedMessage(title: string | null) {
+export function buildDeletedMessage(poll: Pick<PollRow, "title" | "lang">) {
+  const t = translator(poll.lang);
   return {
     content: "",
-    embeds: [{ title: escapeMarkdown(title ?? "日程調整"), description: "この調整は主催者によって削除されました。", color: 0x888888 }],
+    embeds: [{ title: pollTitle(poll), description: t("この調整は主催者によって削除されました。", "This poll was deleted by the organizer."), color: 0x888888 }],
     components: [],
     allowed_mentions: NO_MENTIONS,
   };
@@ -105,8 +127,12 @@ export function buildMentionMessage(text: string, userIds: string[]) {
  * 参加者をロールで決めた調整はそのロールを、それ以外は @everyone をメンションする（security-design E-3）。
  * Bot に「@everyone、@here、全てのロールにメンション」の権限がないサーバーでは、@everyone は文字だけが出て通知されない
  */
-export function buildAnnounceMessage(poll: Pick<PollRow, "title" | "target_type" | "target_id">, pollMessageId: string) {
-  const text = `**${escapeMarkdown(poll.title ?? "日程調整")}** の募集を始めました。募集メッセージの［回答する］から入力できます。`;
+export function buildAnnounceMessage(poll: Pick<PollRow, "title" | "target_type" | "target_id" | "lang">, pollMessageId: string) {
+  const t = translator(poll.lang);
+  const text = t(
+    `**${pollTitle(poll)}** の募集を始めました。募集メッセージの［回答する］から入力できます。`,
+    `**${pollTitle(poll)}** is now open. Press [Answer] on the poll message to enter your availability.`,
+  );
   return withPollMention(poll, text, pollMessageId);
 }
 
@@ -116,12 +142,15 @@ export function buildAnnounceMessage(poll: Pick<PollRow, "title" | "target_type"
  * 募集メッセージがあれば、その返信にしてリンクも添える
  */
 export function buildDayReminderMessage(
-  poll: Pick<PollRow, "title" | "target_type" | "target_id" | "guild_id" | "channel_id" | "message_id">,
+  poll: Pick<PollRow, "title" | "target_type" | "target_id" | "guild_id" | "channel_id" | "message_id" | "lang">,
   when: { startAt: number; allDay: boolean; timezone: string },
 ) {
+  const t = translator(poll.lang);
   const link = poll.message_id ? `\n${messageLink(poll.guild_id, poll.channel_id, poll.message_id)}` : "";
-  const time = when.allDay ? `${formatDate(when.startAt, when.timezone)} です（終日）。` : `<t:${when.startAt}:f> からです。`;
-  const text = `**${escapeMarkdown(poll.title ?? "日程調整")}** は ${time}${link}`;
+  const title = pollTitle(poll);
+  const text = when.allDay
+    ? t(`**${title}** は ${formatDate(when.startAt, when.timezone)} です（終日）。${link}`, `**${title}** is on ${formatDate(when.startAt, when.timezone, "en")} (all day).${link}`)
+    : t(`**${title}** は <t:${when.startAt}:f> からです。${link}`, `**${title}** starts at <t:${when.startAt}:f>.${link}`);
   return withPollMention(poll, text, poll.message_id);
 }
 
@@ -130,15 +159,16 @@ export function buildDayReminderMessage(
  * mention のときは、公開時のお知らせ（§5.5）と同じく、参加者をロールで決めた調整はそのロールを、それ以外は @everyone をメンションする
  */
 export function buildFixedMessage(
-  poll: Pick<PollRow, "title" | "target_type" | "target_id">,
+  poll: Pick<PollRow, "title" | "target_type" | "target_id" | "lang">,
   fixed: readonly { when: string; note: string | null }[],
   cancelled: readonly string[],
   mention: boolean,
 ) {
-  const lines = [`**${escapeMarkdown(poll.title ?? "日程調整")}** の日程のお知らせ`];
-  if (fixed.length) lines.push("確定した日時:", ...fixed.map((f) => `・${f.when}${f.note ? `（${f.note}）` : ""}`));
-  else lines.push("確定している日時はありません。");
-  if (cancelled.length) lines.push("確定を取り消した日時:", ...cancelled.map((w) => `・~~${w}~~`));
+  const t = translator(poll.lang);
+  const lines = [t(`**${pollTitle(poll)}** の日程のお知らせ`, `**${pollTitle(poll)}**: schedule update`)];
+  if (fixed.length) lines.push(t("確定した日時:", "Confirmed dates:"), ...fixed.map((f) => `・${f.when}${f.note ? t(`（${f.note}）`, ` (${f.note})`) : ""}`));
+  else lines.push(t("確定している日時はありません。", "No dates are confirmed."));
+  if (cancelled.length) lines.push(t("確定を取り消した日時:", "Cancelled dates:"), ...cancelled.map((w) => `・~~${w}~~`));
   const text = lines.join("\n");
   return mention ? withPollMention(poll, text, null) : { content: text, allowed_mentions: { parse: [] as string[] } };
 }

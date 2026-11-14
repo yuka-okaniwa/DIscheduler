@@ -342,7 +342,7 @@ const COFFEE_PATHS = ["M10 2v2", "M14 2v2", "M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4
  */
 export function donationLine(url: string | null): HTMLElement | null {
   if (!url) return null;
-  const note = donationNote(url);
+  const note = donationNote(url, LANG);
   const cup = h("span", { class: "support-cup" });
   cup.appendChild(lineIcon("support-cup-ic", COFFEE_PATHS));
   return h(

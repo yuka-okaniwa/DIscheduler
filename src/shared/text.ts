@@ -60,8 +60,11 @@ export function isValidDonationUrl(u: string | null | undefined): u is string {
  * scripts/prepare-public.sh の __DONATION_NOTE__ の文と同じにする（変えるときは両方そろえる）
  */
 export const KOFI_DONATION_NOTE = "支援は Ko-fi（海外の支援サービス）で受け付けています。画面は英語ですが、金額を選んで、PayPal で支払えます。";
-export function donationNote(url: string): string {
-  return /^https:\/\/(www\.)?ko-fi\.com(\/|$)/.test(url) ? KOFI_DONATION_NOTE : "";
+/** 英語の画面での説明（Ko-fi の画面が英語であることは書かない。§6.12） */
+export const KOFI_DONATION_NOTE_EN = "Support is accepted through Ko-fi. Choose an amount and pay with PayPal.";
+export function donationNote(url: string, lang: "ja" | "en" = "ja"): string {
+  if (!/^https:\/\/(www\.)?ko-fi\.com(\/|$)/.test(url)) return "";
+  return lang === "en" ? KOFI_DONATION_NOTE_EN : KOFI_DONATION_NOTE;
 }
 
 /** 選択肢の記号・名前に使えない文字（メンション・カスタム絵文字の記法など） */

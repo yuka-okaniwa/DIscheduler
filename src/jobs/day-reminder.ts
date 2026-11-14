@@ -27,7 +27,7 @@ const LOOKAHEAD = 2 * DAY + 2 * HOUR;
 /** 1 回に読み込む予定の数の上限（送る時刻を過ぎていないものも含まれるため、送る数より多めに読む） */
 const MAX_CANDIDATES = 200;
 
-type Target = Pick<PollRow, "id" | "guild_id" | "channel_id" | "message_id" | "title" | "target_type" | "target_id" | "timezone" | "remind_day_offset" | "remind_hour"> & {
+type Target = Pick<PollRow, "id" | "guild_id" | "channel_id" | "message_id" | "title" | "target_type" | "target_id" | "timezone" | "remind_day_offset" | "remind_hour" | "lang"> & {
   slot_id: string;
   start_at: number;
   all_day: number;
@@ -47,7 +47,7 @@ export async function runDayReminder(env: Env, scheduledTime: number): Promise<v
   // 送る時刻は調整ごとの設定とタイムゾーンで決まるので、読み込んだあとで絞り込む
   const rows = await db
     .prepare(
-      "SELECT s.id AS slot_id, p.id, p.guild_id, p.channel_id, p.message_id, p.title, p.target_type, p.target_id, p.timezone, " +
+      "SELECT s.id AS slot_id, p.id, p.guild_id, p.channel_id, p.message_id, p.title, p.target_type, p.target_id, p.timezone, p.lang, " +
         "p.remind_day_offset, p.remind_hour, s.start_at, s.all_day " +
         "FROM slots s JOIN polls p ON p.id = s.poll_id " +
         "WHERE s.fixed_at IS NOT NULL AND s.start_at > ? AND s.start_at <= ? AND p.status = 'fixed' " +

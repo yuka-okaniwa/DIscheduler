@@ -4,7 +4,7 @@ import { bestSlotId, effectiveStatus, tally } from "../src/shared/model";
 import { donationNote, isSafeChoiceText, KOFI_DONATION_NOTE, sanitizeDisplayName, sanitizeLine } from "../src/shared/text";
 import { epochToZoned, formatSlot, formatSlotTime, nextCronAt, zonedToEpoch } from "../src/shared/time";
 import { canViewChannel } from "../src/discord/members";
-import { escapeMarkdown } from "../src/discord/messages";
+import { buildDayReminderMessage, buildDeletedMessage, buildFixedMessage, buildPollMessage, escapeMarkdown } from "../src/discord/messages";
 
 describe("集計と最有力候補（§6.9.3）", () => {
   const choices = [
@@ -151,5 +151,29 @@ describe("言語（§6.12）", () => {
     const at = Date.UTC(2026, 10, 18, 11) / 1000; // 2026-11-18 20:00 JST
     expect(formatSlot({ startAt: at, endAt: at + 7200, allDay: false }, "Asia/Tokyo", "en")).toBe("Wed, Nov 18 20:00–22:00");
     expect(formatSlot({ startAt: at, endAt: null, allDay: true }, "Asia/Tokyo", "en")).toBe("Wed, Nov 18 All day");
+  });
+});
+
+describe("チャンネルに投稿するメッセージの言語（§6.12）", () => {
+  const poll = {
+    id: "AAAAAAAAAAAAAAAAAAAAAA", guild_id: "1", channel_id: "2", message_id: "3", organizer_id: "4", title: null, description: null,
+    timezone: "Asia/Tokyo", timezone_set: 1, target_type: "channel", target_id: null, join_policy: "closed", status: "open",
+    deadline_at: 1900000000, choices_version: 1, lang: "en",
+  } as unknown as Parameters<typeof buildPollMessage>[0]["poll"];
+  it("英語の調整は、募集メッセージ・削除・お知らせ・リマインドを英語で書く", () => {
+    const m = buildPollMessage({ poll, slots: [], choices: [], participants: [], answers: [], now: 1800000000 });
+    const text = JSON.stringify(m);
+    expect(text).toContain("Scheduling poll");
+    expect(text).toContain("Deadline:");
+    expect(text).toContain('"label":"Answer"');
+    expect(text).not.toMatch(/[ぁ-ん]/);
+    expect(JSON.stringify(buildDeletedMessage(poll))).not.toMatch(/[ぁ-ん]/);
+    expect(JSON.stringify(buildFixedMessage(poll, [{ when: "<t:1:F>", note: null }], [], true))).not.toMatch(/[ぁ-ん]/);
+    expect(JSON.stringify(buildDayReminderMessage(poll, { startAt: 1900000000, allDay: true, timezone: "Asia/Tokyo" }))).toContain("(all day)");
+  });
+  it("日本語の調整は、これまでどおり日本語で書く", () => {
+    const text = JSON.stringify(buildPollMessage({ poll: { ...poll, lang: "ja" }, slots: [], choices: [], participants: [], answers: [], now: 1800000000 }));
+    expect(text).toContain("日程調整");
+    expect(text).toContain('"label":"回答する"');
   });
 });

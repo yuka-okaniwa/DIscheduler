@@ -37,14 +37,14 @@ import {
   type SessionRow,
 } from "../db";
 import { fetchMember, searchMembers } from "../discord/members";
-import { buildAnnounceMessage, buildDeletedMessage, buildFixedMessage, buildMentionMessage, buildPollMessage, escapeMarkdown, messageLink } from "../discord/messages";
+import { buildAnnounceMessage, buildDeletedMessage, buildFixedMessage, buildMentionMessage, buildPollMessage, escapeMarkdown, messageLink, pollTitle } from "../discord/messages";
 import { discord, DiscordError, type DiscordChannel, type DiscordRole } from "../discord/rest";
 import { AppError, DAY, floorToMinute, nowSec, randomId, timingSafeEqual } from "../core/lib";
 import { DEFAULT_DEADLINE_DAYS, resetParticipants, RETENTION } from "../polls/create";
 import { canAnswer, effectiveStatus, LIMITS, reminderAt, UNANSWERED } from "../shared/model";
 import { isValidTimeZone, nextCronAt } from "../shared/time";
 import { isValidDonationUrl } from "../shared/text";
-import { decodeMsg, msg, pick, requestLang, type Lang, type Msg } from "../shared/i18n";
+import { decodeMsg, msg, pick, requestLang, translator, type Lang, type Msg } from "../shared/i18n";
 import { getRecentTimes, mergeRanges, rangesFromSlots, saveRecentTimesStatement } from "../guilds/recent-times";
 import { getEventDefaults } from "../guilds/settings";
 import { syncAfterAnswer, syncNow } from "../polls/sync";
@@ -671,8 +671,9 @@ polls.put("/:id/answers/me", async (c) => {
 });
 
 /** 確定した候補の日時の表示（Discord のメッセージ用） */
-function slotWhen(slot: { start_at: number; all_day: number }): string {
-  return slot.all_day ? `<t:${slot.start_at}:D>（終日）` : `<t:${slot.start_at}:F>`;
+function slotWhen(slot: { start_at: number; all_day: number }, lang: Lang): string {
+  if (!slot.all_day) return `<t:${slot.start_at}:F>`;
+  return lang === "en" ? `<t:${slot.start_at}:D> (all day)` : `<t:${slot.start_at}:D>（終日）`;
 }
 
 /** 登録済みの Discord イベントを消す。すでに消えていれば何もしない。消せなかったら警告の文を返す */
@@ -793,8 +794,11 @@ polls.post("/:id/announce", async (c) => {
   const lateIds = new Set(late.map((s) => s.id));
   const message = buildFixedMessage(
     poll,
-    fixed.map((s) => ({ when: slotWhen(s), note: lateIds.has(s.id) ? `<t:${s.start_at}:R>に始まります` : null })),
-    cancelled.map((s) => slotWhen(s)),
+    fixed.map((s) => ({
+      when: slotWhen(s, poll.lang),
+      note: lateIds.has(s.id) ? (poll.lang === "en" ? `starts <t:${s.start_at}:R>` : `<t:${s.start_at}:R>に始まります`) : null,
+    })),
+    cancelled.map((s) => slotWhen(s, poll.lang)),
     mention,
   );
   try {
@@ -842,7 +846,7 @@ async function upsertEvent(
   if (slot.start_at <= now + 60) return msg("開始日時が過ぎているため、Discord イベントは登録しませんでした。", "The start time has passed, so no Discord event was created.");
   const end = slot.end_at ?? slot.start_at + (slot.all_day ? DAY : 3600);
   const payload: Record<string, unknown> = {
-    name: (poll.title ?? "日程調整").slice(0, 100),
+    name: (poll.title ?? (poll.lang === "en" ? "Scheduling poll" : "日程調整")).slice(0, 100),
     description: (poll.description ?? "").slice(0, 1000) || undefined,
     privacy_level: 2,
     scheduled_start_time: new Date(slot.start_at * 1000).toISOString(),
@@ -893,15 +897,23 @@ polls.post("/:id/remind", async (c) => {
   const r = await db.prepare("UPDATE polls SET last_reminded_at = ? WHERE id = ? AND (last_reminded_at IS NULL OR last_reminded_at <= ?)").bind(now, poll.id, now - 12 * 3600).run();
   if (r.meta.changes !== 1) throw new AppError(429, "rate_limited", msg("リマインドは 12 時間に 1 回までです。", "You can send a reminder once every 12 hours."));
   const link = poll.message_id ? `\n${messageLink(poll.guild_id, poll.channel_id, poll.message_id)}` : "";
-  const deadline = poll.deadline_at ? `（締切 <t:${poll.deadline_at}:f>）` : "";
+  // チャンネルに投稿するので、調整の言語で書く（§6.12）
+  const t = translator(poll.lang);
+  const deadline = poll.deadline_at ? t(`（締切 <t:${poll.deadline_at}:f>）`, ` (deadline <t:${poll.deadline_at}:f>)`) : "";
   await discord(
     c.env,
     "POST",
     `/channels/${poll.channel_id}/messages`,
     {
-      ...buildMentionMessage(`**${escapeMarkdown(poll.title ?? "日程調整")}** の回答をお願いします${deadline}。募集メッセージの［回答する］から入力できます。${link}`, rows.results.map((x) => x.user_id)),
+      ...buildMentionMessage(
+        t(
+          `**${pollTitle(poll)}** の回答をお願いします${deadline}。募集メッセージの［回答する］から入力できます。${link}`,
+          `Please answer **${pollTitle(poll)}**${deadline}. Press [Answer] on the poll message to enter your availability.${link}`,
+        ),
+        rows.results.map((x) => x.user_id),
+      ),
       // 募集メッセージと同じ［回答する］。押したときの確認（参加者か・チャンネルが同じか）も同じ処理で行う
-      components: [{ type: 1, components: [{ type: 2, style: 1, label: "回答する", custom_id: `answer:${poll.id}` }] }],
+      components: [{ type: 1, components: [{ type: 2, style: 1, label: t("回答する", "Answer"), custom_id: `answer:${poll.id}` }] }],
     },
   );
   return c.json({ ok: true, count: rows.results.length });
@@ -955,7 +967,7 @@ polls.post("/:id/repost", async (c) => {
 /** 調整を削除する。募集メッセージを「削除されました」に変え、Discord イベントも消してから、データを消す */
 async function deletePollEverywhere(env: Env, poll: PollRow): Promise<Msg[]> {
   if (poll.message_id) {
-    await discord(env, "PATCH", `/channels/${poll.channel_id}/messages/${poll.message_id}`, buildDeletedMessage(poll.title)).catch(() => undefined);
+    await discord(env, "PATCH", `/channels/${poll.channel_id}/messages/${poll.message_id}`, buildDeletedMessage(poll)).catch(() => undefined);
   }
   // 確定時に登録した Discord イベントも、調整と一緒に消す
   const warnings: Msg[] = [];
