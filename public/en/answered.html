@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Answer saved | DIscheduler</title>
+  <meta name="robots" content="noindex, nofollow">
+  <!-- origin:start --><!-- 日本語版と英語版の対応（docs/design.md §6.12） -->
+  <link rel="alternate" hreflang="ja" href="__PUBLIC_ORIGIN__/answered">
+  <link rel="alternate" hreflang="en" href="__PUBLIC_ORIGIN__/en/answered">
+  <link rel="alternate" hreflang="x-default" href="__PUBLIC_ORIGIN__/answered"><!-- origin:end -->
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="color-scheme" content="dark">
+  <link rel="stylesheet" href="/assets/site.css">
+  <link rel="stylesheet" href="/assets/lp.css">
+  <!-- 回答の完了画面（S3a。docs/design.md §6.4, §6.10.1）
+       回答・名前・調整のタイトルなどは表示しない。調整の ID はアドレスの # の後ろにだけ置き、サーバーにも広告の枠にも送らない -->
+</head>
+<body class="lp">
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="/en/">
+        <span class="brand-mark"><img src="/favicon.svg" alt="" width="36" height="36"></span>
+        <span class="brand-name">DIscheduler</span>
+      </a>
+      <nav class="site-nav" aria-label="Main menu">
+        <ul>
+          <li class="nav-lang"><a class="lang-link" href="/answered" hreflang="ja" lang="ja" data-lang="ja">日本語</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="doc answered">
+    <div class="container">
+      <article class="doc-body">
+        <h1>Your answer has been saved</h1>
+        <p>Your answer is now included in the results.</p>
+        <p class="answered-actions"><a class="btn btn-primary" id="to-summary" href="/en/" hidden>View results</a></p>
+        <!-- donation:start -->
+        <aside class="support-card" aria-label="Support">
+          <span class="support-cup"><svg class="support-cup-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></svg></span>
+          <div class="support-body">
+            <p class="support-lead">DIscheduler is free to use. If it helped you, a coffee's worth of support would be much appreciated.</p>
+            <p><a class="btn btn-secondary btn-small" href="__DONATION_URL__" rel="noopener noreferrer">Buy me a coffee</a></p>
+            <p class="term">Optional. Supporting doesn't change any features.</p>
+            <p class="term">__DONATION_NOTE_EN__</p>
+          </div>
+        </aside>
+        <!-- donation:end -->
+        <!-- ad:start -->
+        <aside class="ad-slot" data-ad-slot aria-label="Advertisement">
+          <p class="ad-label">Advertisement</p>
+          <div class="ad-box"><noscript><p class="ad-off">JavaScript is required to show ads.</p></noscript></div>
+          <p class="ad-choice"></p>
+        </aside>
+        <!-- ad:end -->
+      </article>
+    </div>
+  </main>
+  <script src="/assets/answered.js" defer></script>
+  <!-- ad:start --><script src="/assets/ad-consent.js" defer></script><!-- ad:end -->
+  <script src="/assets/lang.js" defer></script>
+</body>
+</html>

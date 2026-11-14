@@ -15,8 +15,12 @@ function applyShell(): void {
   if (skip) skip.textContent = tr("本文へ移動", "Skip to content");
   const loading = document.querySelector(".loading");
   if (loading) loading.textContent = tr("読み込んでいます…", "Loading…");
+  document.querySelector(".site-header .brand")?.setAttribute("href", tr("/", "/en/"));
   const security = document.getElementById("footer-security");
-  if (security) security.textContent = tr("セキュリティ方針", "Security policy");
+  if (security) {
+    security.textContent = tr("セキュリティ方針", "Security policy");
+    security.setAttribute("href", tr("/security", "/en/security"));
+  }
   // 言語の切り替え。もう一方の言語の名前を、その言語で書く
   const sw = document.getElementById("lang-switch");
   if (sw) {

@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Security policy | DIscheduler</title>
+  <meta name="description" content="DIscheduler's security policy: the data it handles, how long it is kept, who can see answers, the main safeguards, remaining risks, and how to report a vulnerability.">
+  <!-- Google AdSense のサイトの所有確認（パブリッシャー ID。公開してよい値。docs/design.md §6.10.1） -->
+  <meta name="google-adsense-account" content="ca-pub-7698368408631991">
+  <!-- origin:start --><!-- 日本語版と英語版の対応（docs/design.md §6.12） -->
+  <link rel="alternate" hreflang="ja" href="__PUBLIC_ORIGIN__/security">
+  <link rel="alternate" hreflang="en" href="__PUBLIC_ORIGIN__/en/security">
+  <link rel="alternate" hreflang="x-default" href="__PUBLIC_ORIGIN__/security"><!-- origin:end -->
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="color-scheme" content="dark">
+  <link rel="stylesheet" href="/assets/site.css">
+  <link rel="stylesheet" href="/assets/lp.css">
+  <!-- アイコン: Lucide（ISC License。/assets/lucide-LICENSE.txt）。英語版（docs/design.md §6.12） -->
+</head>
+<body class="lp">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="/en/">
+        <span class="brand-mark"><img src="/favicon.svg" alt="" width="36" height="36"></span>
+        <span class="brand-name">DIscheduler</span>
+      </a>
+      <nav class="site-nav" aria-label="Main menu">
+        <ul>
+          <li class="nav-optional"><a href="/en/#features">Features</a></li>
+          <li class="nav-optional"><a href="/en/#how">How it works</a></li>
+          <li class="nav-optional"><a href="/en/#admin">For admins</a></li>
+          <li><a href="/en/manual/">Manual</a></li>
+          <li class="nav-sm-hide"><a href="/en/security" aria-current="page">Security</a></li>
+          <li class="nav-lang"><a class="lang-link" href="/security" hreflang="ja" lang="ja" data-lang="ja">日本語</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="doc">
+    <div class="container">
+      <nav class="toc" aria-label="Contents">
+        <h2>Contents</h2>
+        <ol>
+          <li><a href="#not-do">What this app does not do</a></li>
+          <li><a href="#visibility">Who can see answers</a></li>
+          <li><a href="#data">Data stored and retention</a></li>
+          <li><a href="#measures">Main safeguards</a></li>
+          <li><a href="#commands">Where commands can be used</a></li>
+          <li><a href="#risks">Remaining risks</a></li>
+          <!-- ad:start --><li><a href="#ads">About ads</a></li><!-- ad:end -->
+          <li><a href="#report">Reporting a vulnerability</a></li>
+          <li><a href="#history">Revision history</a></li>
+        </ol>
+      </nav>
+
+      <article class="doc-body">
+        <h1>Security policy</h1>
+        <p class="doc-meta">Last updated: November 14, 2026</p>
+
+        <p>DIscheduler is a scheduling bot for Discord servers. It handles personal information (participants' schedules), so security and privacy come first in its design.</p>
+        <p>It does not rely on hiding how it works: all of its safeguards are public, and only keys and tokens are kept secret. The design details (threat model, safeguards and remaining risks) are published in the <a href="https://github.com/etlit-r/DIscheduler/blob/main/docs/security-design.md" rel="noopener noreferrer">security design document</a> (in Japanese).</p>
+
+        <section class="summary-box" aria-labelledby="summary-title">
+          <h2 id="summary-title">Summary</h2>
+          <ul>
+            <li>Answers are shared only among the participants of a poll and are not visible to anyone else.</li>
+            <li>No password or login is required. Answer links are delivered in messages only the recipient can see.</li>
+            <li>Only the data needed for scheduling is stored, and it is deleted automatically 6 months after the deadline or confirmation.</li>
+            <li>The bot works with only the permissions it needs, without the Administrator permission.</li>
+          </ul>
+        </section>
+
+        <h2 id="not-do">What this app does not do</h2>
+        <ul>
+          <li>It doesn't ask for your Discord password or an OAuth login</li>
+          <li>It doesn't request the Administrator permission</li>
+          <li>It doesn't read message content (the Message Content Intent is not used)</li>
+          <li>It doesn't read message history from before it was added either (it doesn't ask for the Read Message History permission and has no code that fetches channel messages)</li>
+          <li>It doesn't store email addresses, IP addresses or avatar images</li>
+          <li>It doesn't mention <code>@here</code>. It mentions the role used to choose the participants (or <code>@everyone</code> without one) only when a poll is published, when dates are announced, and in event reminders (mentions in date announcements are limited to 3 per poll per hour)</li>
+          <!-- no-ad:start --><li>It doesn't load outside analytics, ads or CDNs</li><!-- no-ad:end -->
+          <!-- ad:start --><li>It doesn't load outside analytics or CDNs. Ads are shown only on the home page, this page and the answer-saved page, inside a frame isolated from the site, and you can decline them (they never appear on the create, answer or results pages or in Discord messages. See <a href="#ads">About ads</a>)</li><!-- ad:end -->
+          <!-- donation:start --><li>The donation link is a plain link to an outside service; no scripts or images from the support service are loaded</li><!-- donation:end -->
+        </ul>
+
+        <h2 id="visibility">Who can see answers</h2>
+        <p>Each person's answers (○△× and their comment) are shared among the participants of that poll so that everyone can find a time, and <strong>are not visible to non-participants (outsiders or members of the same server who are not participants)</strong>.</p>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th scope="col">Who / where</th><th scope="col">What is visible</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Participants and the organizer of the poll</th><td>Everyone's answers and comments</td></tr>
+              <tr><th scope="row">The poll message in the channel</th><td>Only the number of ○ for each option and how many have answered</td></tr>
+              <tr><th scope="row">Date announcements and Discord events</th><td>Only the confirmed dates and a mention of the participants. Events are visible only within the server</td></tr>
+              <tr><th scope="row">Non-participants and people outside the server</th><td>Nothing (even if they know the poll's URL)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>There are no public view links or export features. Someone removed from the participants can no longer open the pages from that moment. There is no viewing screen for the operator either, and answers are never written to logs.</p>
+
+        <h2 id="data">Data stored and retention</h2>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th scope="col">Data</th><th scope="col">Kept until</th></tr></thead>
+            <tbody>
+              <tr><td>Discord server ID, channel ID, user IDs and display names (participants only)</td><td>The poll is deleted (at most 6 months after the deadline or confirmation)</td></tr>
+              <tr><td>Poll title, description and date options</td><td>Same as above</td></tr>
+              <tr><td>Each participant's answers (○△×) and comment</td><td>Same as above (shown to all participants of the same poll)</td></tr>
+              <tr><td>The poll's time zone (set by the organizer)</td><td>Same as above</td></tr>
+              <tr><td>Server defaults (how participants are chosen, role, event location) and the user ID of the admin who last changed them</td><td>The bot is removed from the server</td></tr>
+              <tr><td>Recently used time ranges in the server (start and end times only, the latest 3. Who entered them is not stored. Shown only to organizers on the edit page)</td><td>6 months after last use, or until the bot is removed from the server</td></tr>
+              <tr><td>Short-lived records for login and abuse prevention (hashes of answer links and sessions with user IDs, and user IDs in rate-limit counters)</td><td>Answer links expire after 10 minutes and sessions after 12 hours, and rate-limit counters after their period (at most 1 day); each is deleted by the daily cleanup at 16:00 UTC</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Your display time zone and language settings are stored only in your browser and are not sent to the server.</p>
+        <p>Organizers can delete a poll immediately at any time from "My polls", opened with [Manage my polls] in <code>/schedule</code>. Removing the bot from a server also deletes that server's data.</p>
+
+        <h3>When participants are set automatically</h3>
+        <p>With automatic participants (the default), the server's member list (user IDs, display names and roles) is fetched from Discord. Only the information of people who become participants is stored; nothing about anyone else is kept. Organizers can also switch to choosing participants by hand for each poll.</p>
+
+        <h2 id="measures">Main safeguards</h2>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th scope="col">Area</th><th scope="col">Safeguard</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Discord integration</th><td>Every request is verified with its Ed25519 signature, and replay attacks are prevented</td></tr>
+              <tr><th scope="row">Identity</th><td>Answer links valid for 10 minutes and usable once are issued in Discord messages only the recipient can see</td></tr>
+              <tr><th scope="row">Sessions</th><td><code>HttpOnly</code> / <code>Secure</code> / <code>SameSite=Strict</code> cookies that expire after 12 hours and are valid for a single poll (an organizer's "My polls" uses a separate session limited to the polls they organize in that server)</td></tr>
+              <tr><th scope="row">Web attacks</th><td>Strict CSP, CSRF tokens, Origin checks, prepared statements and XSS protection</td></tr>
+              <tr><th scope="row">Access control</th><td>Answers are shared only among participants. Only the organizer can confirm or delete</td></tr>
+              <tr><th scope="row">Data minimization</th><td>Only the minimum data is stored, and it is permanently deleted 6 months after the deadline or confirmation</td></tr>
+              <tr><th scope="row">Availability</th><td>Cloudflare DDoS protection, rate limits (including limits on creating polls) and input size limits</td></tr>
+              <tr><th scope="row">Development</th><td>Minimal dependencies, Dependabot, CodeQL, secret scanning, branch protection and SHA-pinned GitHub Actions</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Public pages, including this one, are served with the same strict CSP as the app. No outside scripts, fonts or images are loaded.</p>
+
+        <h2 id="commands">Where commands can be used</h2>
+        <p>Server admins choose the channels where commands work in Discord's built-in Integrations settings, and who can use them in a channel follows that channel's permissions (both are enforced by Discord). Commands from channels that aren't allowed, or from people without permission, never reach the bot.</p>
+        <p>To prevent abuse, the number of polls is limited (10 per person per hour, 100 per server per day, and 20 active polls per channel).</p>
+
+        <h2 id="risks">Remaining risks</h2>
+        <p>These are points that can't be fully prevented, or trade-offs chosen for convenience.</p>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th scope="col">Item</th><th scope="col">Details and response</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Forwarded answer links</th><td>If a participant gives their answer link to someone else, that person can view and answer as them once within 10 minutes. Links are single use, valid for 10 minutes and for one poll only, which limits the impact. Please don't share your answer links.</td></tr>
+              <tr><th scope="row">Retention</th><td>Schedule data remains for 6 months after the deadline or confirmation, so it can be used for looking back or rescheduling. Organizers can delete it at any time.</td></tr>
+              <tr><th scope="row">Commands right after adding the bot</th><td>Right after the bot is added, anyone who can send messages can use the commands in every channel. To limit where they work, an admin should choose the channels in the Integrations settings.</td></tr>
+              <tr><th scope="row">Cloudflare and Discord</th><td>Data is stored on Cloudflare and exchanged through Discord. Their infrastructure or staff could access it; this depends on each company's policies. Storing as little data as possible keeps the impact small.</td></tr>
+              <tr><th scope="row">Free plan</th><td>There is no uptime guarantee (SLA). On busy days that go over Cloudflare's free tier, the service is unavailable until 00:00 UTC. This costs nothing, and answers already entered are not lost.</td></tr>
+              <!-- ad:start --><tr><th scope="row">Ads</th><td>Inside the ad frame, the ad network's scripts run and its cookies are used. Inappropriate ads, or ads leading to malicious sites, can't be ruled out entirely. The frame is isolated from the site, so ads can't read schedules or answers. You can decline ads with the button below the frame. If you see a problematic ad, please tell us through <a href="#report">Reporting a vulnerability</a>.</td></tr><!-- ad:end -->
+              <tr><th scope="row">Encryption at rest</th><td>Stored data is encrypted by Cloudflare. The app adds no extra encryption: it stores only schedules and display names, and complicating key management was judged to be the bigger risk.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ad:start -->
+        <h2 id="ads">About ads</h2>
+        <p>To cover running costs, ads are shown only on the home page, this page and the answer-saved page. Ads are served by Ninja AdMax.</p>
+        <ul>
+          <li><strong>Where</strong>: only in the frame labeled "Advertisement" on the home page, this page and the page shown after saving an answer. The answer-saved page doesn't show answers, names or the poll title, and no information about which poll was answered is sent to our server or the ad network. Ads never appear on the create, answer, results or confirmation pages, or in messages posted to Discord.</li>
+          <li><strong>Isolation from the site</strong>: the ad frame is loaded from a separate address (<code>ads.etlits.dev</code>). Browser security keeps the ad scripts from touching this site's pages, cookies or stored data, and ads can't navigate this page to another site. Schedules, answers and names are never passed to the ad frame.</li>
+          <li><strong>Ad network cookies and tracking</strong>: when ads are shown, your IP address, browser information and the ad frame's address are sent to the ad network. The ad network may record browsing patterns with cookies and similar means to show relevant ads; this is governed by the ad network's privacy policy.</li>
+          <li><strong>How to decline</strong>: press "Decline ads and the ad network's cookies" below the ad frame. Ads then stop loading and nothing is sent to the ad network. Your choice is stored only in your browser, not on our server. If Global Privacy Control (a "do not track" setting) is on in your browser, ads start out declined. Declining ads doesn't affect the bot's features.</li>
+        </ul>
+
+        <!-- ad:end -->
+        <h2 id="report">Reporting a vulnerability</h2>
+        <p>If you find a vulnerability, <strong>please don't open a public issue</strong>. Report it through GitHub's <a href="https://github.com/etlit-r/DIscheduler/security/advisories/new" rel="noopener noreferrer">private vulnerability reporting</a> (the repository's Security tab → "Report a vulnerability"). Reports in English or Japanese are welcome.</p>
+        <ul>
+          <li>Acknowledgement: we aim to reply within 3 business days</li>
+          <li>After a fix, with the reporter's consent, the vulnerability is published as a GitHub Security Advisory</li>
+          <li>Good-faith security research is welcome, but please don't access other users' data, disrupt the service or use social engineering</li>
+        </ul>
+        <p>Only the latest version on the <code>main</code> branch is supported.</p>
+
+        <h2 id="history">Revision history</h2>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th scope="col">Date</th><th scope="col">Changes</th></tr></thead>
+            <tbody>
+              <tr><td>November 14, 2026</td><td>Published the English version. Corrected the description of mentions to match how the bot works (it mentions the participants' role, or <code>@everyone</code>, only in announcements and reminders)</td></tr>
+              <tr><td>November 14, 2026</td><td>Changed the site address to discheduler.etlits.dev<!-- ad:start -->. Changed the ad frame address to ads.etlits.dev<!-- ad:end --></td></tr>
+              <tr><td>November 13, 2026</td><td>Added that the bot doesn't read message history from before it was added</td></tr>
+              <!-- ad:start --><tr><td>November 11, 2026</td><td>Added ads on the answer-saved page</td></tr><!-- ad:end -->
+              <tr><td>November 10, 2026</td><td>Added the organizer's "My polls" page and its session</td></tr>
+              <!-- ad:start --><tr><td>November 9, 2026</td><td>Added ads on the home page and this page</td></tr><!-- ad:end -->
+              <tr><td>November 8, 2026</td><td>Added "recently used time ranges in the server" to the stored data</td></tr>
+              <tr><td>November 5, 2026</td><td>First version published</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- ad:start -->
+        <aside class="ad-slot" data-ad-slot aria-label="Advertisement">
+          <p class="ad-label">Advertisement</p>
+          <div class="ad-box"><noscript><p class="ad-off">JavaScript is required to show ads.</p></noscript></div>
+          <p class="ad-choice"></p>
+        </aside>
+        <!-- ad:end -->
+      </article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <a class="footer-brand" href="/en/"><span class="brand-mark brand-mark-sm"><img src="/favicon.svg" alt="" width="28" height="28"></span>DIscheduler</a>
+      <ul>
+        <li><a href="/en/manual/">Manual</a></li>
+        <li><a href="/en/">Home</a></li>
+        <li><a href="/en/security#report">Report a vulnerability</a></li>
+        <!-- donation:start --><li><a href="/en/#support">Support</a></li><!-- donation:end -->
+        <li><a href="https://github.com/etlit-r/DIscheduler" rel="noopener noreferrer"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>GitHub</a></li>
+      </ul>
+    </div>
+  </footer>
+  <!-- ad:start --><script src="/assets/ad-consent.js" defer></script><!-- ad:end -->
+  <script src="/assets/lang.js" defer></script>
+</body>
+</html>

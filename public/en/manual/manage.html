@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manage and delete polls | Manual | DIscheduler</title>
+  <meta name="description" content="Editing, viewing results and deleting polls from the list of your polls, and when data is deleted.">
+  <!-- origin:start --><!-- 日本語版と英語版の対応（docs/design.md §6.12） -->
+  <link rel="alternate" hreflang="ja" href="__PUBLIC_ORIGIN__/manual/manage">
+  <link rel="alternate" hreflang="en" href="__PUBLIC_ORIGIN__/en/manual/manage">
+  <link rel="alternate" hreflang="x-default" href="__PUBLIC_ORIGIN__/manual/manage"><!-- origin:end -->
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="color-scheme" content="dark">
+  <link rel="stylesheet" href="/assets/site.css">
+  <link rel="stylesheet" href="/assets/lp.css">
+  <!-- アイコン: Lucide（ISC License。/assets/lucide-LICENSE.txt）。英語版（docs/design.md §6.12） -->
+  <!-- マニュアルの英語版（docs/design.md §6.2 S8、§6.12）。日本語版を直したら、こちらも直す -->
+</head>
+<body class="lp">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="/en/">
+        <span class="brand-mark"><img src="/favicon.svg" alt="" width="36" height="36"></span>
+        <span class="brand-name">DIscheduler</span>
+      </a>
+      <nav class="site-nav" aria-label="Main menu">
+        <ul>
+          <li class="nav-optional"><a href="/en/#features">Features</a></li>
+          <li class="nav-optional"><a href="/en/#how">How it works</a></li>
+          <li class="nav-optional"><a href="/en/#admin">For admins</a></li>
+          <li><a href="/en/manual/" aria-current="page">Manual</a></li>
+          <li class="nav-sm-hide"><a href="/en/security">Security</a></li>
+          <li class="nav-lang"><a class="lang-link" href="/manual/manage" hreflang="ja" lang="ja" data-lang="ja">日本語</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="doc manual">
+    <div class="container">
+      <nav class="toc manual-toc" id="toc" aria-label="Manual contents">
+        <h2>Manual</h2>
+        <ol>
+          <li><a href="/en/manual/">Introduction</a></li>
+          <li><a href="/en/manual/install">Add to your server</a></li>
+          <li><a href="/en/manual/channels">Choose where it works</a></li>
+          <li><a href="/en/manual/create">Create a poll</a></li>
+          <li><a href="/en/manual/slots">Add date options</a></li>
+          <li><a href="/en/manual/choices">Change the answer choices</a></li>
+          <li><a href="/en/manual/participants">Choose participants</a></li>
+          <li><a href="/en/manual/publish">Publish</a></li>
+          <li><a href="/en/manual/answer">Answer</a></li>
+          <li><a href="/en/manual/summary">View results and confirm</a></li>
+          <li><a href="/en/manual/message">Updating the poll message</a></li>
+          <li><a href="/en/manual/manage" aria-current="page">Manage and delete polls</a></li>
+          <li><a href="/en/manual/troubleshooting">Troubleshooting</a></li>
+        </ol>
+      </nav>
+
+      <article class="doc-body">
+        <p class="manual-crumb"><a href="/en/manual/">Manual</a><span aria-hidden="true"> › </span>Manage and delete polls</p>
+        <p class="toc-jump"><a href="#toc">Go to contents</a></p>
+        <h1>Manage and delete polls</h1>
+        <h2 id="find">Open the list of your polls</h2>
+        <ol>
+          <li>Run <code>/schedule</code> in any channel of the server (an empty draft in the same channel is reused, so no extra drafts are created).</li>
+          <li>Press [Manage my polls] in the reply. A link to the list page arrives in a message only you can see (usable once within 10 minutes).</li>
+          <li>Press [Open my polls] to open the list page in your browser.</li>
+        </ol>
+        <p>The list shows the polls you organize in that server, most recently updated first. Polls in other servers aren't shown (open the list from that server in the same way). Only you can see the list.</p>
+
+        <h2 id="list">What you can do in the list</h2>
+        <ul>
+          <li><strong>Filter</strong>: by All, Draft, Open, Closed or Confirmed.</li>
+          <li><strong>Edit</strong>: opens the edit page, where you can change the title, date options, participants and more.</li>
+          <li><strong>Results</strong>: opens the results page (published polls only), where you can confirm dates and send reminders.</li>
+          <li><strong>Poll message</strong>: opens the poll message in Discord.</li>
+          <li><strong>Delete</strong>: deletes the poll after confirmation.</li>
+        </ul>
+
+        <h2 id="delete">Delete a poll</h2>
+        <ul>
+          <li>Delete it with [Delete] on the list page, or from "Delete poll" at the bottom of the edit page.</li>
+          <li>Deleting removes the date options, answers and other data right away, and they can't be restored. The poll message changes to "Deleted".</li>
+          <li>Discord events created for the poll are deleted too.</li>
+        </ul>
+
+        <h2 id="retention">When data is deleted automatically</h2>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th scope="col">Data</th><th scope="col">Deleted</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Drafts with nothing entered</th><td>3 days after creation</td></tr>
+              <tr><th scope="row">Published polls</th><td>6 months after the deadline (if confirmed, 6 months after the confirmed date; with several confirmed dates, after the latest one)</td></tr>
+              <tr><th scope="row">Server data</th><td>When the bot is removed from the server (<a href="/en/manual/install#remove">how to remove it</a>)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Deletion is done by the daily cleanup at 16:00 UTC. The list of stored data is in the <a href="/en/security#data">security policy</a>.</p>
+
+        <nav class="pager" aria-label="Previous and next pages">
+          <a class="prev" href="/en/manual/message"><small>Previous</small><span>Updating the poll message</span></a>
+          <a class="next" href="/en/manual/troubleshooting"><small>Next</small><span>Troubleshooting</span></a>
+        </nav>
+      
+</article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <a class="footer-brand" href="/en/"><span class="brand-mark brand-mark-sm"><img src="/favicon.svg" alt="" width="28" height="28"></span>DIscheduler</a>
+      <ul>
+        <li><a href="/en/">Home</a></li>
+        <li><a href="/en/manual/">Manual</a></li>
+        <li><a href="/en/security">Security policy</a></li>
+        <li><a href="/en/security#report">Report a vulnerability</a></li>
+        <!-- donation:start --><li><a href="/en/#support">Support</a></li><!-- donation:end -->
+        <li><a href="https://github.com/etlit-r/DIscheduler" rel="noopener noreferrer"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>GitHub</a></li>
+      </ul>
+    </div>
+  </footer>
+  <script src="/assets/lang.js" defer></script>
+</body>
+</html>

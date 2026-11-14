@@ -2,5 +2,8 @@ User-agent: *
 Allow: /$
 Allow: /security
 Allow: /manual/
+Allow: /en/$
+Allow: /en/security
+Allow: /en/manual/
 Allow: /ads.txt
 Disallow: /

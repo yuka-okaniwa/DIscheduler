@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Add to your server | Manual | DIscheduler</title>
+  <meta name="description" content="How to add DIscheduler to a Discord server, the permissions it needs, and how to remove it.">
+  <!-- origin:start --><!-- 日本語版と英語版の対応（docs/design.md §6.12） -->
+  <link rel="alternate" hreflang="ja" href="__PUBLIC_ORIGIN__/manual/install">
+  <link rel="alternate" hreflang="en" href="__PUBLIC_ORIGIN__/en/manual/install">
+  <link rel="alternate" hreflang="x-default" href="__PUBLIC_ORIGIN__/manual/install"><!-- origin:end -->
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="color-scheme" content="dark">
+  <link rel="stylesheet" href="/assets/site.css">
+  <link rel="stylesheet" href="/assets/lp.css">
+  <!-- アイコン: Lucide（ISC License。/assets/lucide-LICENSE.txt）。英語版（docs/design.md §6.12） -->
+  <!-- マニュアルの英語版（docs/design.md §6.2 S8、§6.12）。日本語版を直したら、こちらも直す -->
+</head>
+<body class="lp">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="/en/">
+        <span class="brand-mark"><img src="/favicon.svg" alt="" width="36" height="36"></span>
+        <span class="brand-name">DIscheduler</span>
+      </a>
+      <nav class="site-nav" aria-label="Main menu">
+        <ul>
+          <li class="nav-optional"><a href="/en/#features">Features</a></li>
+          <li class="nav-optional"><a href="/en/#how">How it works</a></li>
+          <li class="nav-optional"><a href="/en/#admin">For admins</a></li>
+          <li><a href="/en/manual/" aria-current="page">Manual</a></li>
+          <li class="nav-sm-hide"><a href="/en/security">Security</a></li>
+          <li class="nav-lang"><a class="lang-link" href="/manual/install" hreflang="ja" lang="ja" data-lang="ja">日本語</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="doc manual">
+    <div class="container">
+      <nav class="toc manual-toc" id="toc" aria-label="Manual contents">
+        <h2>Manual</h2>
+        <ol>
+          <li><a href="/en/manual/">Introduction</a></li>
+          <li><a href="/en/manual/install" aria-current="page">Add to your server</a></li>
+          <li><a href="/en/manual/channels">Choose where it works</a></li>
+          <li><a href="/en/manual/create">Create a poll</a></li>
+          <li><a href="/en/manual/slots">Add date options</a></li>
+          <li><a href="/en/manual/choices">Change the answer choices</a></li>
+          <li><a href="/en/manual/participants">Choose participants</a></li>
+          <li><a href="/en/manual/publish">Publish</a></li>
+          <li><a href="/en/manual/answer">Answer</a></li>
+          <li><a href="/en/manual/summary">View results and confirm</a></li>
+          <li><a href="/en/manual/message">Updating the poll message</a></li>
+          <li><a href="/en/manual/manage">Manage and delete polls</a></li>
+          <li><a href="/en/manual/troubleshooting">Troubleshooting</a></li>
+        </ol>
+      </nav>
+
+      <article class="doc-body">
+        <p class="manual-crumb"><a href="/en/manual/">Manual</a><span aria-hidden="true"> › </span>Add to your server</p>
+        <p class="toc-jump"><a href="#toc">Go to contents</a></p>
+        <h1>Add to your server</h1>
+        <p>To add DIscheduler to a server, you need the Manage Server permission in that server.</p>
+
+        <h2 id="steps">Steps</h2>
+        <ol>
+          <li>Press [Add to your server] on the <a href="/en/">home page</a>.</li>
+          <li>Discord opens. Choose the server to add it to.</li>
+          <li>Check the permissions for the bot and press [Authorize].</li>
+          <li>Type <code>/schedule</code> in a channel of the server. If it appears among the command suggestions, the bot has been added.</li>
+        </ol>
+        <p class="note">Right after the bot is added, anyone who can send messages can use the commands in every channel. To limit where they work, follow <a href="/en/manual/channels">Choose where it works</a>.</p>
+
+        <h2 id="permissions">Permissions given to the bot</h2>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th scope="col">Permission</th><th scope="col">Used for</th><th scope="col">Type</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">View Channel</th><td>Checking the channel it posts to</td><td>Required</td></tr>
+              <tr><th scope="row">Send Messages</th><td>Posting the poll and announcements</td><td>Required</td></tr>
+              <tr><th scope="row">Embed Links</th><td>Showing the options and counts clearly</td><td>Required</td></tr>
+              <tr><th scope="row">Create Events</th><td>Adding the confirmed date as a Discord event</td><td>Optional</td></tr>
+              <tr><th scope="row">Manage Events</th><td>Editing and deleting events the bot created</td><td>Optional</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <ul>
+          <li>The bot doesn't ask for the Administrator permission, and it doesn't read message content.</li>
+          <li>Scheduling still works if you add it without the event permissions. In that case, only creating a Discord event when confirming isn't available.</li>
+          <li>In the channel where the bot posts the poll message, it needs View Channel, Send Messages and Embed Links. If you restrict permissions per channel, also allow them for the bot's role.</li>
+        </ul>
+
+        <h2 id="remove">Remove from your server</h2>
+        <p>When you no longer use DIscheduler, remove the bot from the server. You need the Kick Members or Manage Server permission in that server.</p>
+        <h3>Before removing it</h3>
+        <p>Once removed, the bot can no longer change channel messages or Discord events. If you want the poll messages changed to "Deleted" or the Discord events created by the bot removed, have the organizers delete their polls first, as described in <a href="/en/manual/manage">Manage and delete polls</a>.</p>
+        <h3>Steps</h3>
+        <ol>
+          <li>In the server's member list, right-click the DIscheduler bot (long-press on a phone).</li>
+          <li>Choose "Kick DIscheduler" and confirm.</li>
+        </ol>
+        <p>You can also open DIscheduler in Server Settings → Integrations and remove it there.</p>
+        <h3>After removing it</h3>
+        <ul>
+          <li>The <code>/schedule</code> (<code>/di</code>) commands no longer work in that server.</li>
+          <li>The server's polls, answers, server defaults and other data are deleted by the daily cleanup at 16:00 UTC. Deleted data can't be restored.</li>
+          <li>Poll messages and announcements already posted, and Discord events created by the bot, remain because the bot can no longer delete them. If you don't need them, a server admin can delete them in Discord.</li>
+          <li>If you add the bot again after the data has been deleted, it starts fresh, as when it was first added (server defaults go back to their initial values).</li>
+        </ul>
+
+        <nav class="pager" aria-label="Previous and next pages">
+          <a class="prev" href="/en/manual/"><small>Previous</small><span>Introduction</span></a>
+          <a class="next" href="/en/manual/channels"><small>Next</small><span>Choose where it works</span></a>
+        </nav>
+      
+</article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <a class="footer-brand" href="/en/"><span class="brand-mark brand-mark-sm"><img src="/favicon.svg" alt="" width="28" height="28"></span>DIscheduler</a>
+      <ul>
+        <li><a href="/en/">Home</a></li>
+        <li><a href="/en/manual/">Manual</a></li>
+        <li><a href="/en/security">Security policy</a></li>
+        <li><a href="/en/security#report">Report a vulnerability</a></li>
+        <!-- donation:start --><li><a href="/en/#support">Support</a></li><!-- donation:end -->
+        <li><a href="https://github.com/etlit-r/DIscheduler" rel="noopener noreferrer"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>GitHub</a></li>
+      </ul>
+    </div>
+  </footer>
+  <script src="/assets/lang.js" defer></script>
+</body>
+</html>
