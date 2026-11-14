@@ -333,6 +333,23 @@ describe("サーバーの既定値: イベントの場所（§5.3.1）", () => {
   });
 });
 
+describe("調整に結び付いた返事の言語（§6.12）", () => {
+  it("英語で作られた調整の［回答する］［使い方］は、押した人の言語によらず英語で返す", async () => {
+    const s = await seedPoll();
+    await (env as unknown as Env).DB.prepare("UPDATE polls SET lang = 'en' WHERE id = ?").bind(s.pollId).run();
+    const calls = mockDiscord();
+    await call(
+      await signed({ type: 3, id: "9", application_id: "1", token: "tok", locale: "ja", guild_id: GUILD, channel_id: CHANNEL, member: member(ALICE), data: { custom_id: `answer:${s.pollId}` } }),
+      e(),
+    );
+    const reply = JSON.stringify(calls.find((c) => c.method === "PATCH" && c.path.includes("@original"))!.body);
+    expect(reply).toContain("Here is your own link");
+    expect(reply).not.toMatch(/[ぁ-ん]/);
+    const help = await call(await signed({ type: 3, id: "9", application_id: "1", token: "tok", locale: "ja", guild_id: GUILD, channel_id: CHANNEL, member: member(ALICE), data: { custom_id: "help:en" } }), e());
+    expect(JSON.stringify(await help.json())).toContain("How to use DIscheduler");
+  });
+});
+
 describe("6 回目のレビューの修正", () => {
   it("［サーバー既定値の設定］では、保存済みのロールを選択状態にしない（削除されていても開けるように）", async () => {
     mockDiscord();

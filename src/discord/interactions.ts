@@ -104,7 +104,8 @@ export async function handleInteraction(env: Env, ctx: Ctx, i: Interaction, orig
 
   if (i.type === 3) {
     const id = i.data?.custom_id ?? "";
-    if (id === "help") return ephemeral(helpText(origin, langOf(i)));
+    // 募集メッセージの［使い方］は調整の言語（help:ja / help:en）。それ以外の［使い方］と、以前の募集メッセージ（help）は押した人の言語
+    if (id === "help" || id === "help:ja" || id === "help:en") return ephemeral(helpText(origin, id === "help" ? langOf(i) : id === "help:en" ? "en" : "ja"));
     if (id === "settings" || id === "settings_mode" || id === "settings_role" || id === "settings_location" || id === "settings_channel") {
       return handleSettings(env, i, id, guildId, userId);
     }
@@ -125,14 +126,15 @@ export async function handleInteraction(env: Env, ctx: Ctx, i: Interaction, orig
         return json({ type: 7, data: { content: t("この調整は見つかりませんでした。", "This poll was not found."), components: [] } });
       }
       const url = await issueLink(env.DB, origin, poll.id, userId, "organizer", "edit");
+      const tp = translator(poll.lang);
       return json({
         type: 7,
         data: {
-          content: t(
+          content: tp(
             `「${escapeMarkdown(poll.title ?? "（タイトル未入力）")}」の管理リンクです（10 分有効・1 回限り）。他の人に渡さないでください。`,
             `Here is the link to manage "${escapeMarkdown(poll.title ?? "(untitled)")}" (valid for 10 minutes, single use). Don't share it with anyone.`,
           ),
-          components: [{ type: 1, components: [linkButton(t("調整を開く", "Open the poll"), url)] }],
+          components: [{ type: 1, components: [linkButton(tp("調整を開く", "Open the poll"), url)] }],
         },
       });
     }
@@ -286,8 +288,10 @@ async function handlePollButton(
     await editOriginal(env, i, t("この調整は見つかりませんでした。削除された可能性があります。", "This poll was not found. It may have been deleted."));
     return;
   }
+  // 調整に結び付いた返事は、押した人ではなく調整の言語で書く（チャンネルのメッセージと言語をそろえる。§6.12）
+  const tp = translator(poll.lang);
   if (!(await hitRateLimit(env.DB, `link:${userId}`, 20, 3600, nowSec()))) {
-    await editOriginal(env, i, t("リンクの発行回数の上限（1 時間に 20 回）に達しました。しばらくしてからお試しください。", "You've reached the limit of 20 links per hour. Please try again later."));
+    await editOriginal(env, i, tp("リンクの発行回数の上限（1 時間に 20 回）に達しました。しばらくしてからお試しください。", "You've reached the limit of 20 links per hour. Please try again later."));
     return;
   }
   const isOrganizer = poll.organizer_id === userId;
@@ -302,7 +306,7 @@ async function handlePollButton(
       await editOriginal(
         env,
         i,
-        t(
+        tp(
           "この調整の参加者ではないため、回答・閲覧できません。参加したい場合は主催者に追加を依頼してください。",
           "You're not a participant in this poll, so you can't answer or view it. If you'd like to join, ask the organizer to add you.",
         ),
@@ -316,23 +320,23 @@ async function handlePollButton(
     kind = "view";
   }
   if (kind === "answer" && !canAnswer(status)) {
-    await editOriginal(env, i, t("この調整にはいま回答できません。", "This poll isn't accepting answers right now."));
+    await editOriginal(env, i, tp("この調整にはいま回答できません。", "This poll isn't accepting answers right now."));
     return;
   }
   const role = isOrganizer ? "organizer" : "participant";
   const url = await issueLink(env.DB, origin, poll.id, userId, role, kind);
-  const label = kind === "answer" ? t("回答する", "Answer") : t("集計を見る", "View results");
+  const label = kind === "answer" ? tp("回答する", "Answer") : tp("集計を見る", "View results");
   const note =
     status === "fixed"
-      ? t("日時は確定していますが、予定が変わった場合は回答を変更できます。", "A date is confirmed, but you can still change your answer if your plans change.")
+      ? tp("日時は確定していますが、予定が変わった場合は回答を変更できます。", "A date is confirmed, but you can still change your answer if your plans change.")
       : status === "closed"
-        ? t("締切を過ぎていますが、回答の入力・変更はできます。", "The deadline has passed, but you can still enter or change your answer.")
+        ? tp("締切を過ぎていますが、回答の入力・変更はできます。", "The deadline has passed, but you can still enter or change your answer.")
         : "";
   await editOriginal(
     env,
     i,
     // 応答に気づきやすくするため、押した本人をメンションする（本人にだけ見える応答なので、ほかの人には見えない）
-    t(
+    tp(
       `<@${userId}> 「${pollTitle(poll)}」のあなた専用のリンクです（10 分有効・1 回限り）。他の人に渡さないでください。${note ? `\n${note}` : ""}`,
       `<@${userId}> Here is your own link for "${pollTitle(poll)}" (valid for 10 minutes, single use). Don't share it with anyone.${note ? `\n${note}` : ""}`,
     ),
