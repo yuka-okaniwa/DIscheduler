@@ -670,8 +670,6 @@ polls.put("/:id/answers/me", async (c) => {
   return c.json({ ok: true });
 });
 
-
-
 /** 登録済みの Discord イベントを消す。すでに消えていれば何もしない。消せなかったら警告の文を返す */
 async function deleteEvent(env: Env, poll: PollRow, slot: SlotRow): Promise<Msg | null> {
   if (!slot.discord_event_id) return null;
